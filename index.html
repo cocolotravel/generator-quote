@@ -599,6 +599,7 @@
     <div class="header-pill">Quote Generator</div>
   </div>
   <div class="header-actions">
+    <button class="btn btn-secondary btn-sm" onclick="newQuote()">＋ New</button>
     <button class="btn btn-secondary btn-sm" onclick="openDraftModal()">📁 Drafts</button>
     <button class="btn btn-secondary btn-sm" onclick="saveDraftToServer()">💾 Save Draft</button>
     <button class="btn btn-green btn-sm" onclick="exportExcel()">⬇ Export Excel</button>
@@ -980,6 +981,9 @@
     <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;gap:8px;">
       <input type="text" id="draftNameInput" placeholder="Draft name (e.g. Alps_Spring_2026)" style="flex:1">
       <button class="btn btn-primary" onclick="saveDraftToServer()">Save current</button>
+    </div>
+    <div style="padding:10px 22px;border-bottom:1px solid var(--border);">
+      <input type="text" id="draftSearch" placeholder="Search drafts…" style="width:100%" oninput="filterDrafts(this.value)">
     </div>
     <div style="overflow-y:auto;flex:1;padding:8px 0;" id="draftList">
       <div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">Loading drafts…</div>
@@ -2088,31 +2092,51 @@ async function deleteDraftFromServer(name) {
   }
 }
 
+let allDrafts = [];
+
+function renderDraftList(drafts) {
+  const list = $('draftList');
+  if (!drafts.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">No drafts found</div>';
+    return;
+  }
+  list.innerHTML = '';
+  drafts.forEach(d => {
+    const date = new Date(d.lastModified).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;padding:10px 22px;border-bottom:1px solid var(--border);gap:10px;';
+    row.innerHTML = `
+      <div style="flex:1;cursor:pointer;" onclick="loadDraftFromServer('${d.key}')">
+        <div style="font-weight:600;font-size:13px;color:var(--text)">${d.key.replace(/_/g,' ')}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${date}</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="loadDraftFromServer('${d.key}')">Load</button>
+      <button class="btn btn-ghost btn-sm btn-danger" onclick="deleteDraftFromServer('${d.key}')">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function filterDrafts(q) {
+  const filtered = q.trim()
+    ? allDrafts.filter(d => d.key.toLowerCase().includes(q.trim().toLowerCase()))
+    : allDrafts;
+  renderDraftList(filtered);
+}
+
 async function loadDraftList() {
   const list = $('draftList');
   if (!list) return;
   list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">Loading…</div>';
   try {
     const { drafts } = await apiRequest('GET', '/drafts');
-    if (!drafts.length) {
+    allDrafts = drafts;
+    if (!allDrafts.length) {
       list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">No saved drafts yet</div>';
       return;
     }
-    list.innerHTML = '';
-    drafts.forEach(d => {
-      const date = new Date(d.lastModified).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;padding:10px 22px;border-bottom:1px solid var(--border);gap:10px;';
-      row.innerHTML = `
-        <div style="flex:1;cursor:pointer;" onclick="loadDraftFromServer('${d.key}')">
-          <div style="font-weight:600;font-size:13px;color:var(--text)">${d.key.replace(/_/g,' ')}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${date}</div>
-        </div>
-        <button class="btn btn-secondary btn-sm" onclick="loadDraftFromServer('${d.key}')">Load</button>
-        <button class="btn btn-ghost btn-sm btn-danger" onclick="deleteDraftFromServer('${d.key}')">✕</button>
-      `;
-      list.appendChild(row);
-    });
+    const q = $('draftSearch')?.value || '';
+    filterDrafts(q);
   } catch(e) {
     list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--accent);font-size:13px;">Could not connect to drafts server.<br><span style="color:var(--text3)">${e.message}</span></div>`;
   }
@@ -2122,7 +2146,44 @@ function openDraftModal() {
   $('draftModal').style.display = 'flex';
   const tourName = $('tourName').value;
   if (tourName) $('draftNameInput').value = tourName.replace(/[^a-zA-Z0-9\s\-_]/g,'').trim().replace(/\s+/g,'_');
+  const searchEl = $('draftSearch');
+  if (searchEl) searchEl.value = '';
   loadDraftList();
+}
+
+function newQuote() {
+  const hasData = $('tourName').value ||
+    $('hotelRows').children.length > 0 ||
+    $('serviceRows').children.length > 0 ||
+    $('transportRows').children.length > 0;
+  if (hasData && !confirm('Start a new quote? Any unsaved changes will be lost.')) return;
+
+  $('tourName').value = '';
+  $('tourRef').value = '';
+  $('tourDate').value = '';
+  $('numGuides').value = 1;
+  $('taxRate').value = 10;
+  $('eurRate').value = 175;
+  $('guideDailyRate').value = 35000;
+  $('guideDailyAllowance').value = 3000;
+  $('partnerMarkup').value = 0;
+  $('partnerTaxable').checked = false;
+  $('targetMargin').value = 30;
+  manualPrices = {};
+
+  $('hotelRows').innerHTML = '';
+  $('serviceRows').innerHTML = '';
+  $('transportRows').innerHTML = '';
+  $('guideRows').innerHTML = '';
+  hotelRowCount = 0;
+
+  addHotelRow({city:'', meal:'B', roomType:'Twin', twin:0, single:0, guide:0});
+  addHotelRow({city:'', meal:'B', roomType:'Twin', twin:0, single:0, guide:0});
+  addHotelRow({city:'', meal:'B', roomType:'Twin', twin:0, single:0, guide:0});
+  addHotelRow({city:'', meal:'B', roomType:'Twin', twin:0, single:0, guide:0});
+
+  recalc();
+  showToast('New quote started');
 }
 
 function closeDraftModal() {
