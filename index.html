@@ -2159,7 +2159,7 @@ function exportExcel() {
   const margin = getVal('targetMargin') / 100;
   const partnerPct = getVal('partnerMarkup') / 100;
   const tax = 1 + (getVal('taxRate') || 10) / 100;
-  const guideTotal = calcGuideTotal() * tax;
+  const guideTotal = calcGuideTotal();
   const tourName = $('tourName').value || 'Quote';
 
   // ── Dashboard sheet
