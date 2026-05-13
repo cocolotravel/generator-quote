@@ -1026,29 +1026,20 @@ function parseCSV(text) {
 async function loadCatalogs() {
   const loadingEl = document.getElementById('loadingOverlay');
   try {
+    const xanoHeaders = { 'x-api-key': DRAFTS_KEY };
     const [svcRes, trnRes, citRes] = await Promise.all([
-      fetch('services_data.csv'),
-      fetch('transports_data.csv'),
+      fetch(DRAFTS_API + '/xano/services',   { headers: xanoHeaders }),
+      fetch(DRAFTS_API + '/xano/transports', { headers: xanoHeaders }),
       fetch('cities_data.csv'),
     ]);
-    const [svcText, trnText, citText] = await Promise.all([
-      svcRes.text(), trnRes.text(), citRes.text()
-    ]);
 
-    const svcRows = parseCSV(svcText);
-    SERVICES_DATA = svcRows.map(r => ({
-      name: r.name,
-      group: parseInt(r.group_price) || 0,
-      adult: parseInt(r.adult_price) || 0,
-      child: parseInt(r.child_price) || 0,
-    }));
+    if (!svcRes.ok) throw new Error('Failed to load services from proxy: ' + svcRes.statusText);
+    if (!trnRes.ok) throw new Error('Failed to load transports from proxy: ' + trnRes.statusText);
 
-    const trnRows = parseCSV(trnText);
-    TRANSPORTS_DATA = trnRows.map(r => ({
-      name: r.name,
-      price: parseInt(r.price) || 0,
-    }));
+    SERVICES_DATA   = await svcRes.json();
+    TRANSPORTS_DATA = await trnRes.json();
 
+    const citText = await citRes.text();
     const citRows = parseCSV(citText);
     CITIES = citRows.map(r => r.city).filter(Boolean);
     console.log('Loaded cities:', CITIES.length, 'services:', SERVICES_DATA.length, 'transports:', TRANSPORTS_DATA.length);
@@ -1057,8 +1048,8 @@ async function loadCatalogs() {
     init();
     refreshAllCitySelects();
   } catch(e) {
-    console.error('Failed to load catalog CSVs:', e);
-    if (loadingEl) loadingEl.innerHTML = '<div style="color:var(--accent);font-size:14px;padding:20px">⚠ Could not load catalog files.<br>Make sure services_data.csv, transports_data.csv, and cities_data.csv are in the same folder as this HTML file.</div>';
+    console.error('Failed to load catalogs:', e);
+    if (loadingEl) loadingEl.innerHTML = '<div style="color:var(--accent);font-size:14px;padding:20px">⚠ Could not load catalog data.<br>' + e.message + '</div>';
   }
 }
 
