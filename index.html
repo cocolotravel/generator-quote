@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cocolo Travel — Quote Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2ed;
+    --surface: #ffffff;
+    --surface2: #faf8f5;
+    --border: #e2ddd6;
+    --border2: #ccc7be;
+    --text: #1a1714;
+    --text2: #5c5750;
+    --text3: #9b9490;
+    --accent: #c84b2f;
+    --accent2: #e8603f;
+    --accent-bg: #fdf1ee;
+    --green: #2d6a4f;
+    --green-bg: #eaf4ef;
+    --blue: #1d4e89;
+    --blue-bg: #edf2fa;
+    --yellow: #b5830a;
+    --yellow-bg: #fdf6e3;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.10);
+    --radius: 8px;
+    --radius-sm: 4px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--text);
+    color: white;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+    color: white;
+  }
+  .header-logo span {
+    color: var(--accent2);
+  }
+  .header-pill {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  /* TAB NAV */
+  .tab-nav {
+    background: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 32px;
+    border-bottom: 2px solid rgba(255,255,255,0.08);
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 18px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .tab-btn:hover { color: rgba(255,255,255,0.8); }
+  .tab-btn.active {
+    color: white;
+    border-bottom-color: var(--accent2);
+  }
+  .tab-badge {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+  }
+  .tab-btn.active .tab-badge { background: var(--accent); }
+
+  /* LAYOUT */
+  .tab-panel {
+    display: none;
+    min-height: calc(100vh - 96px);
+  }
+  .tab-panel.active { display: block; }
+
+  .main-content {
+    padding: 28px 32px;
+    max-width: 1400px;
+  }
+
+  /* PRICING PANEL */
+  .pricing-panel {
+    padding: 28px 32px;
+  }
+
+  /* SECTIONS */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .section-header {
+    padding: 14px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-num {
+    background: var(--accent);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .section-body {
+    padding: 20px;
+  }
+
+  /* DASHBOARD GRID */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .field-group.span2 { grid-column: span 2; }
+  .field-group.span4 { grid-column: span 4; }
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+  input[type=text], input[type=number], select, textarea {
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: white;
+    width: 100%;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200, 75, 47, 0.1);
+  }
+  input[type=number] {
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* TABLES */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .data-table th {
+    background: var(--surface2);
+    border-bottom: 2px solid var(--border);
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+  .data-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 6px 8px;
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface2); }
+  .data-table input, .data-table select {
+    padding: 5px 7px;
+    font-size: 12px;
+    border-radius: 3px;
+  }
+  .data-table input[type=number] {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  /* AUTOCOMPLETE */
+  .autocomplete-wrap {
+    position: relative;
+  }
+  .autocomplete-dropdown {
+    position: fixed;
+    background: white;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    max-height: 240px;
+    overflow-y: auto;
+    display: none;
+    min-width: 280px;
+  }
+  .autocomplete-dropdown.open { display: block; }
+  .autocomplete-item {
+    padding: 7px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover, .autocomplete-item.selected { background: var(--accent-bg); }
+  .autocomplete-item .item-name { flex: 1; }
+  .autocomplete-item .item-price {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+  .autocomplete-custom {
+    padding: 7px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    border-top: 1px solid var(--border);
+  }
+  .autocomplete-custom:hover { background: var(--accent-bg); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border2);
+  }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text3);
+    padding: 4px 8px;
+  }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-danger { color: var(--accent); }
+  .btn-danger:hover { background: var(--accent-bg); }
+  .btn-green {
+    background: var(--green);
+    color: white;
+  }
+  .btn-green:hover { opacity: 0.9; }
+  .btn-blue {
+    background: var(--blue);
+    color: white;
+  }
+  .btn-blue:hover { opacity: 0.9; }
+  .btn-sm {
+    padding: 4px 10px;
+    font-size: 11.5px;
+  }
+  .add-row-btn {
+    margin-top: 10px;
+    width: 100%;
+    border: 1.5px dashed var(--border2);
+    background: transparent;
+    color: var(--text3);
+    padding: 7px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+  .add-row-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  /* MONO VALUE */
+  .mono {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  /* SIDEBAR / TOTALS */
+  .sidebar-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .totals-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .totals-table th {
+    background: var(--text);
+    color: white;
+    padding: 9px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    text-align: right;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .totals-table th:first-child { text-align: center; min-width: 50px; }
+  .totals-table th.col-pax { text-align: center; background: var(--accent); }
+  .totals-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 7px 14px;
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    vertical-align: middle;
+  }
+  .totals-table td:first-child {
+    text-align: center;
+    font-weight: 700;
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 13px;
+  }
+  .totals-table tr:hover td { background: var(--accent-bg); }
+  .totals-table tr:hover td:first-child { background: var(--accent-bg); }
+  .totals-table td.suggested { color: var(--green); font-weight: 500; }
+  .totals-table td input[type=number] {
+    width: 120px;
+    padding: 4px 7px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    border: 1.5px solid #e8d49a;
+    border-radius: 3px;
+    text-align: right;
+    background: var(--yellow-bg);
+    color: var(--yellow);
+    font-weight: 600;
+  }
+  .totals-table td.eur { color: var(--blue); }
+
+  .pricing-hint {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .pricing-hint span { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+  .pricing-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    box-shadow: var(--shadow);
+  }
+  .summary-card label {
+    display: block;
+    font-size: 10.5px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+  }
+  .summary-card .val {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .sidebar-summary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .summary-item label {
+    display: block;
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+  }
+  .summary-item .val {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .save-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  /* DRAFT TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 9999;
+    pointer-events: none;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  /* ICON */
+  .icon { font-style: normal; }
+
+  /* SEPARATOR */
+  .sep { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  /* Delete row btn */
+  .del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 14px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    transition: all 0.12s;
+  }
+  .del-btn:hover { color: var(--accent); background: var(--accent-bg); }
+
+  .drag-handle {
+    cursor: grab;
+    color: var(--text3);
+    font-size: 14px;
+    padding: 2px 4px;
+    user-select: none;
+    display: inline-block;
+  }
+  .drag-handle:active { cursor: grabbing; }
+  tr.dragging { opacity: 0.4; }
+  tr.drag-over td { border-top: 2px solid var(--accent); }
+  input[readonly] {
+    background: var(--surface2) !important;
+    color: var(--text3) !important;
+    cursor: default !important;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .tag-custom {
+    background: var(--yellow-bg);
+    color: var(--yellow);
+    border: 1px solid #e8d49a;
+  }
+
+  @media (max-width: 900px) {
+    .pricing-summary-grid { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <div class="header-logo">cocolo<span>travel</span></div>
+    <div class="header-pill">Quote Generator</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary btn-sm" onclick="openDraftModal()">📁 Drafts</button>
+    <button class="btn btn-secondary btn-sm" onclick="saveDraftToServer()">💾 Save Draft</button>
+    <button class="btn btn-green btn-sm" onclick="exportExcel()">⬇ Export Excel</button>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('builder', this)">📋 Builder</button>
+  <button class="tab-btn" onclick="switchTab('pricing', this)">💹 Pricing Summary</button>
+  <button class="tab-btn" onclick="switchTab('budgets', this)">💰 Budgets</button>
+</nav>
+
+<!-- TAB: BUILDER -->
+<div class="tab-panel active" id="tab-builder">
+  <div class="main-content">
+
+    <!-- SECTION 0: DASHBOARD -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="section-num">0</span> Tour Setup</div>
+      </div>
+      <div class="section-body">
+        <div class="dashboard-grid">
+          <div class="field-group span2">
+            <label>Tour Name</label>
+            <input type="text" id="tourName" placeholder="e.g. Alps & Kyoto Spring 2026">
+          </div>
+          <div class="field-group">
+            <label>Tour Ref</label>
+            <input type="text" id="tourRef" placeholder="e.g. CC-2026-045">
+          </div>
+          <div class="field-group">
+            <label>Season / Date</label>
+            <input type="text" id="tourDate" placeholder="e.g. May 2026">
+          </div>
+          <div class="field-group">
+            <label>Guides</label>
+            <input type="number" id="numGuides" value="1" min="0" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>Nights <span style="font-weight:400;text-transform:none;font-size:10px">(auto)</span></label>
+            <input type="number" id="numNights" value="0" min="0" readonly style="background:var(--surface2);color:var(--text3);cursor:default">
+          </div>
+          <div class="field-group">
+            <label>Tax Rate %</label>
+            <input type="number" id="taxRate" value="10" min="0" max="100" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>1 EUR = ¥</label>
+            <input type="number" id="eurRate" value="175" min="1" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>Guide Daily Rate ¥</label>
+            <input type="number" id="guideDailyRate" value="35000" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>Guide Daily Allowance ¥</label>
+            <input type="number" id="guideDailyAllowance" value="3000" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>Partner Markup %</label>
+            <input type="number" id="partnerMarkup" value="0" min="0" max="100" oninput="recalc()">
+          </div>
+          <div class="field-group">
+            <label>Partner Subject to Tax</label>
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 0">
+              <input type="checkbox" id="partnerTaxable" onchange="recalc()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+              <span style="font-size:12px;color:var(--text3)">Apply 10% tax on partner commission</span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Target Markup %</label>
+            <input type="number" id="targetMargin" value="30" min="0" max="100" oninput="recalc()" title="Used to calculate suggested price">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: HOTELS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="section-num">1</span> Hotels</div>
+        <div style="font-size:11px;color:var(--text3)">Single supplement = (Single × 2) − Twin</div>
+      </div>
+      <div class="section-body">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="hotelsTable">
+            <thead>
+              <tr>
+                <th style="width:28px"></th>
+                <th>Night</th>
+                <th style="min-width:130px">City</th>
+                <th style="min-width:180px">Hotel Name</th>
+                <th>Meals</th>
+                <th>Room Type</th>
+                <th style="min-width:100px">Twin ¥</th>
+                <th style="min-width:100px">Single ¥</th>
+                <th style="min-width:100px">Guide ¥</th>
+                <th>Supp ¥</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="hotelRows"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addHotelRow()">+ Add Night</button>
+      </div>
+    </div>
+
+    <!-- SECTION 2: SERVICES -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="section-num">2</span> Services</div>
+        <div style="font-size:11px;color:var(--text3)">City auto-fills from hotel night</div>
+      </div>
+      <div class="section-body">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="servicesTable">
+            <thead>
+              <tr>
+                <th style="width:28px"></th>
+                <th>Day</th>
+                <th style="min-width:100px">City</th>
+                <th style="min-width:240px">Service Name</th>
+                <th style="min-width:90px">Per Person ¥</th>
+                <th style="min-width:90px">Per Group ¥</th>
+                <th style="min-width:90px">Guide ¥</th>
+                <th>Qty</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="serviceRows"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addServiceRow()">+ Add Service</button>
+      </div>
+    </div>
+
+    <!-- SECTION 3: TRANSPORTS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="section-num">3</span> Transports</div>
+        <div style="font-size:11px;color:var(--text3)">City auto-fills from hotel night</div>
+      </div>
+      <div class="section-body">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="transportsTable">
+            <thead>
+              <tr>
+                <th style="width:28px"></th>
+                <th>Day</th>
+                <th style="min-width:100px">City</th>
+                <th style="min-width:240px">Transport Name</th>
+                <th style="min-width:90px">Per Person ¥</th>
+                <th style="min-width:90px">Per Group ¥</th>
+                <th style="min-width:90px">Guide ¥</th>
+                <th>Qty</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="transportRows"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addTransportRow()">+ Add Transport</button>
+      </div>
+    </div>
+
+    <!-- SECTION 4: GUIDE DAYS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="section-num">4</span> Guide Days</div>
+        <div style="font-size:11px;color:var(--text3)">Auto-synced: hotel nights + 1 day</div>
+      </div>
+      <div class="section-body">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="guidesTable">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th style="min-width:120px">City</th>
+                <th style="min-width:90px">Daily Rate ¥</th>
+                <th># Guides</th>
+                <th style="min-width:90px">Allowance ¥</th>
+                <th style="min-width:160px">Notes / Extras</th>
+                <th style="min-width:90px">Extras ¥</th>
+                <th style="min-width:90px">Total ¥</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="guideRows"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addGuideRow()">+ Add Guide Day</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TAB: PRICING SUMMARY -->
+<div class="tab-panel" id="tab-pricing">
+  <div class="pricing-panel">
+
+    <div class="pricing-hint">
+      <span><span class="dot" style="background:var(--green)"></span> Suggested = Cost/PAX ÷ (1 − margin%)</span>
+      <span><span class="dot" style="background:var(--yellow)"></span> Your Price — enter manually per PAX count</span>
+      <span style="margin-left:auto;color:var(--accent)">Margin colors: <b style="color:var(--green)">green ≥ 20%</b> · <b style="color:var(--yellow)">yellow ≥ 0%</b> · <b style="color:var(--accent)">red = loss</b></span>
+    </div>
+
+    <table class="totals-table" id="totalsTable">
+      <thead>
+        <tr>
+          <th class="col-pax">PAX</th>
+          <th>Twins</th>
+          <th>Singles</th>
+          <th>Hotels ¥</th>
+          <th>Services ¥</th>
+          <th>Transports ¥</th>
+          <th>Guides ¥</th>
+          <th>Total Cost ¥</th>
+          <th>Cost / PAX ¥</th>
+          <th>Suggested ¥</th>
+          <th>Your Price ¥</th>
+          <th>EUR / PAX</th>
+          <th>Partner Comm ¥</th>
+          <th>Gross Margin ¥/PAX</th>
+          <th>Gross Margin %</th>
+          <th>Tax on Price ¥/PAX</th>
+          <th>Tax on Cost ¥/PAX</th>
+          <th>Net Margin ¥/PAX</th>
+          <th>Total Net Margin ¥</th>
+        </tr>
+      </thead>
+      <tbody id="totalsBody"></tbody>
+    </table>
+
+  </div>
+</div>
+
+<!-- TAB: BUDGETS -->
+<div class="tab-panel" id="tab-budgets">
+  <div class="pricing-panel">
+
+    <!-- HOTELS BUDGET -->
+    <div style="margin-bottom:36px;">
+      <div style="display:flex;align-items:flex-end;gap:24px;margin-bottom:16px;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'DM Serif Display',serif;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="section-num">1</span> Hotels Budget</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;">Auto-populated from Hotels section · Consecutive same city+type stays grouped</div>
+        </div>
+        <div style="display:flex;gap:16px;margin-left:auto;align-items:flex-end;">
+          <div class="field-group">
+            <label>Twin Rooms</label>
+            <input type="number" id="hc-twins" value="0" min="0" style="width:80px" oninput="recalcHotelCosts()">
+          </div>
+          <div class="field-group">
+            <label>Single Rooms</label>
+            <input type="number" id="hc-singles" value="0" min="0" style="width:80px" oninput="recalcHotelCosts()">
+          </div>
+          <div class="field-group">
+            <label>Guide Rooms</label>
+            <input type="number" id="hc-guides" value="0" min="0" style="width:80px" oninput="recalcHotelCosts()">
+          </div>
+          <div style="padding-bottom:2px;font-size:12px;color:var(--text3)">
+            PAX ≈ <span id="hc-pax-approx" style="font-family:'DM Mono',monospace;font-weight:600;color:var(--text)">0</span>
+          </div>
+        </div>
+      </div>
+      <table class="totals-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;min-width:140px">Hotel / City</th>
+            <th style="text-align:left;min-width:120px">Room Type</th>
+            <th style="text-align:left;min-width:80px">Meals</th>
+            <th>Nights</th>
+            <th>Twin ¥/night</th>
+            <th>Single ¥/night</th>
+            <th>Guide ¥/night</th>
+            <th style="color:var(--green-bg)">Twins Total ¥</th>
+            <th style="color:var(--green-bg)">Singles Total ¥</th>
+            <th style="color:var(--green-bg)">Guides Total ¥</th>
+            <th style="background:var(--accent)">Total ¥</th>
+          </tr>
+        </thead>
+        <tbody id="hotelCostsBody"></tbody>
+        <tfoot>
+          <tr style="background:var(--text);color:white;font-weight:700;">
+            <td colspan="7" style="text-align:right;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Grand Total</td>
+            <td id="hc-total-twins" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;">¥0</td>
+            <td id="hc-total-singles" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;">¥0</td>
+            <td id="hc-total-guides" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;">¥0</td>
+            <td id="hc-total-all" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;background:var(--accent);">¥0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <hr style="border:none;border-top:2px solid var(--border);margin-bottom:36px;">
+
+    <!-- SERVICES & TRANSPORTS BUDGET -->
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;align-items:flex-end;gap:24px;margin-bottom:16px;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'DM Serif Display',serif;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="section-num">2</span> Services & Transports Budget</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;">Total = (Per Person × PAX × Qty) + (Per Group × Qty) + Guide Total</div>
+        </div>
+        <div style="margin-left:auto;">
+          <div class="field-group">
+            <label>PAX</label>
+            <input type="number" id="sb-pax" value="0" min="0" style="width:80px" oninput="recalcSvcBudget()">
+          </div>
+        </div>
+      </div>
+
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;">Services</div>
+      <table class="totals-table" style="margin-bottom:24px;">
+        <thead>
+          <tr>
+            <th style="text-align:left">Day</th>
+            <th style="text-align:left;min-width:100px">City</th>
+            <th style="text-align:left;min-width:260px">Service Name</th>
+            <th>Per Person ¥</th>
+            <th>Per Group ¥</th>
+            <th>Guide ¥</th>
+            <th>Qty</th>
+            <th>Guide Total ¥</th>
+            <th style="background:var(--accent)">Total ¥</th>
+          </tr>
+        </thead>
+        <tbody id="sbServicesBody"></tbody>
+        <tfoot>
+          <tr style="background:var(--text);color:white;font-weight:700;">
+            <td colspan="8" style="text-align:right;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Services Total</td>
+            <td id="sb-svc-total" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;background:var(--accent);">¥0</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;">Transports</div>
+      <table class="totals-table" style="margin-bottom:24px;">
+        <thead>
+          <tr>
+            <th style="text-align:left">Day</th>
+            <th style="text-align:left;min-width:100px">City</th>
+            <th style="text-align:left;min-width:260px">Transport Name</th>
+            <th>Per Person ¥</th>
+            <th>Per Group ¥</th>
+            <th>Guide ¥</th>
+            <th>Qty</th>
+            <th>Guide Total ¥</th>
+            <th style="background:var(--accent)">Total ¥</th>
+          </tr>
+        </thead>
+        <tbody id="sbTransportsBody"></tbody>
+        <tfoot>
+          <tr style="background:var(--text);color:white;font-weight:700;">
+            <td colspan="8" style="text-align:right;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Transports Total</td>
+            <td id="sb-trn-total" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;background:var(--accent);">¥0</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="background:var(--text);color:white;border-radius:var(--radius);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'DM Serif Display',serif;font-size:16px;">Combined Total (Services + Transports)</div>
+        <div id="sb-combined-total" style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;">¥0</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DRAFT MODAL -->
+<div id="draftModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow-lg);width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'DM Serif Display',serif;font-size:17px;">Saved Drafts</div>
+      <button onclick="closeDraftModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);padding:2px 6px;">✕</button>
+    </div>
+    <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;gap:8px;">
+      <input type="text" id="draftNameInput" placeholder="Draft name (e.g. Alps_Spring_2026)" style="flex:1">
+      <button class="btn btn-primary" onclick="saveDraftToServer()">Save current</button>
+    </div>
+    <div style="overflow-y:auto;flex:1;padding:8px 0;" id="draftList">
+      <div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">Loading drafts…</div>
+    </div>
+    <div id="draftModalStatus" style="padding:8px 22px;font-size:12px;color:var(--text3);border-top:1px solid var(--border);min-height:30px;"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="loadingOverlay" style="position:fixed;inset:0;background:rgba(245,242,237,0.95);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+  <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--text)">cocolo<span style="color:var(--accent2)">travel</span></div>
+  <div style="font-size:13px;color:var(--text3)">Loading catalogs…</div>
+</div>
+
+<script>
+// ── DATA CATALOGS (loaded from CSV files) ─────────────────────────────────
+let SERVICES_DATA = [];
+let TRANSPORTS_DATA = [];
+let CITIES = [];
+const ROOMTYPES = ["Double","Twin","Single","Japanese (和)","Japanese w/ Bath (和・貸切温泉)","Japanese w/ Toilet/Shower (和・トイレ・シャワー)","Japanese w/ Toilet (和・トイレ)","Triple","Triple (twin + extra bed)","Apartment","House","Machiya","Quadruple"];
+const MEALS = ["B","B L","B D","B L D","None"];
+
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+  return lines.slice(1).map(line => {
+    // Handle quoted fields with commas
+    const fields = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { fields.push(cur); cur = ''; }
+      else { cur += ch; }
+    }
+    fields.push(cur);
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (fields[i] || '').trim(); });
+    return obj;
+  }).filter(r => r[headers[0]]);
+}
+
+async function loadCatalogs() {
+  const loadingEl = document.getElementById('loadingOverlay');
+  try {
+    const [svcRes, trnRes, citRes] = await Promise.all([
+      fetch('services_data.csv'),
+      fetch('transports_data.csv'),
+      fetch('cities_data.csv'),
+    ]);
+    const [svcText, trnText, citText] = await Promise.all([
+      svcRes.text(), trnRes.text(), citRes.text()
+    ]);
+
+    const svcRows = parseCSV(svcText);
+    SERVICES_DATA = svcRows.map(r => ({
+      name: r.name,
+      group: parseInt(r.group_price) || 0,
+      adult: parseInt(r.adult_price) || 0,
+      child: parseInt(r.child_price) || 0,
+    }));
+
+    const trnRows = parseCSV(trnText);
+    TRANSPORTS_DATA = trnRows.map(r => ({
+      name: r.name,
+      price: parseInt(r.price) || 0,
+    }));
+
+    const citRows = parseCSV(citText);
+    CITIES = citRows.map(r => r.city).filter(Boolean);
+    console.log('Loaded cities:', CITIES.length, 'services:', SERVICES_DATA.length, 'transports:', TRANSPORTS_DATA.length);
+
+    if (loadingEl) loadingEl.style.display = 'none';
+    init();
+    refreshAllCitySelects();
+  } catch(e) {
+    console.error('Failed to load catalog CSVs:', e);
+    if (loadingEl) loadingEl.innerHTML = '<div style="color:var(--accent);font-size:14px;padding:20px">⚠ Could not load catalog files.<br>Make sure services_data.csv, transports_data.csv, and cities_data.csv are in the same folder as this HTML file.</div>';
+  }
+}
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let manualPrices = {};  // key: pax → manually entered price
+
+// ── TAB SWITCHING ──────────────────────────────────────────────────────────
+// ── CITY LOOKUP FROM HOTELS ────────────────────────────────────────────────
+function getHotelCityForDay(day) {
+  const rows = Array.from(document.querySelectorAll('#hotelRows tr'));
+  for (const tr of rows) {
+    const nightInput = tr.querySelector('input[type=number]');
+    const citySelect = tr.querySelectorAll('select')[0];
+    if (nightInput && citySelect && parseInt(nightInput.value) === day) {
+      return citySelect.value;
+    }
+  }
+  return '';
+}
+
+// ── AUTO-NIGHTS (count hotel rows) ────────────────────────────────────────
+function updateNightsCount() {
+  const count = document.querySelectorAll('#hotelRows tr').length;
+  document.getElementById('numNights').value = count;
+}
+
+// ── SYNC GUIDE DAYS (hotel nights + 1) ───────────────────────────────────
+function syncGuideDays() {
+  const hotelRows = Array.from(document.querySelectorAll('#hotelRows tr'));
+  const numNights = hotelRows.length;
+  const numGuideDays = numNights + 1;
+  const guideBody = document.getElementById('guideRows');
+
+  // Add missing rows
+  while (guideBody.querySelectorAll('tr').length < numGuideDays) {
+    addGuideRow({}, false);
+  }
+  // Remove excess rows
+  while (guideBody.querySelectorAll('tr').length > numGuideDays) {
+    guideBody.lastElementChild.remove();
+  }
+
+  // Re-number days and set cities
+  Array.from(guideBody.querySelectorAll('tr')).forEach((tr, i) => {
+    const dayTd = tr.querySelector('.night-num');
+    if (dayTd) dayTd.textContent = i + 1;
+
+    const cityTd = tr.querySelector('.guide-city');
+    if (cityTd) {
+      if (i < numNights) {
+        const hotelCitySelect = hotelRows[i]?.querySelectorAll('select')[0];
+        cityTd.textContent = hotelCitySelect?.value || '';
+        cityTd.style.color = '';
+        cityTd.style.fontWeight = '';
+      } else {
+        cityTd.textContent = 'Return';
+        cityTd.style.color = 'var(--accent)';
+        cityTd.style.fontWeight = '600';
+      }
+    }
+  });
+}
+
+// ── SYNC CITIES IN SERVICES & TRANSPORTS FROM HOTEL NIGHTS ────────────────
+function syncCitiesFromHotels() {
+  const nightCityMap = {};
+  Array.from(document.querySelectorAll('#hotelRows tr')).forEach((tr, i) => {
+    const citySelect = tr.querySelectorAll('select')[0];
+    nightCityMap[i + 1] = citySelect?.value || '';
+  });
+
+  ['#serviceRows', '#transportRows'].forEach(selector => {
+    Array.from(document.querySelectorAll(selector + ' tr')).forEach(tr => {
+      const dayInput = tr.querySelector('input[type=number]');
+      const cityTd = tr.querySelector('.row-city');
+      if (dayInput && cityTd) {
+        const day = parseInt(dayInput.value);
+        if (nightCityMap[day] !== undefined) cityTd.textContent = nightCityMap[day];
+      }
+    });
+  });
+
+  syncGuideDays();
+}
+
+// ── DRAG AND DROP ─────────────────────────────────────────────────────────
+function setupDragDrop(tbody, onReorder) {
+  let dragSrc = null;
+  tbody.addEventListener('dragstart', e => {
+    dragSrc = e.target.closest('tr');
+    if (dragSrc) dragSrc.classList.add('dragging');
+  });
+  tbody.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('tr');
+    if (target && target !== dragSrc) {
+      tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over'));
+      target.classList.add('drag-over');
+    }
+  });
+  tbody.addEventListener('dragleave', e => {
+    const target = e.target.closest('tr');
+    if (target) target.classList.remove('drag-over');
+  });
+  tbody.addEventListener('drop', e => {
+    e.preventDefault();
+    const target = e.target.closest('tr');
+    tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over'));
+    if (target && dragSrc && target !== dragSrc) {
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const srcIdx = rows.indexOf(dragSrc);
+      const tgtIdx = rows.indexOf(target);
+      if (srcIdx < tgtIdx) tbody.insertBefore(dragSrc, target.nextSibling);
+      else tbody.insertBefore(dragSrc, target);
+      if (onReorder) onReorder();
+    }
+  });
+  tbody.addEventListener('dragend', e => {
+    tbody.querySelectorAll('tr').forEach(r => r.classList.remove('dragging', 'drag-over'));
+    dragSrc = null;
+  });
+}
+
+function makeDragHandle() {
+  const span = document.createElement('span');
+  span.className = 'drag-handle';
+  span.textContent = '⠿';
+  span.title = 'Drag to reorder';
+  return span;
+}
+
+function dragHandleTd() {
+  const c = document.createElement('td');
+  c.style.cursor = 'grab';
+  c.appendChild(makeDragHandle());
+  return c;
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString('ja-JP');
+const getVal = id => parseFloat($(id).value) || 0;
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── CITY SELECT ────────────────────────────────────────────────────────────
+function makeCitySelect(val='') {
+  const s = document.createElement('select');
+  s.innerHTML = '<option value="">— city —</option>' +
+    CITIES.map(c => `<option value="${c}" ${c===val?'selected':''}>${c}</option>`).join('');
+  s.style.minWidth = '120px';
+  s.addEventListener('change', recalc);
+  return s;
+}
+
+// Rebuild all city selects in Hotels (called after CITIES loads)
+function refreshAllCitySelects() {
+  Array.from($('hotelRows').querySelectorAll('tr')).forEach(tr => {
+    const selects = tr.querySelectorAll('select');
+    if (!selects[0]) return;
+    const currentVal = selects[0].value;
+    selects[0].innerHTML = '<option value="">— city —</option>' +
+      CITIES.map(c => `<option value="${c}" ${c===currentVal?'selected':''}>${c}</option>`).join('');
+  });
+}
+
+function makeRoomTypeSelect(val='Western') {
+  const s = document.createElement('select');
+  s.innerHTML = ROOMTYPES.map(r => `<option value="${r}" ${r===val?'selected':''}>${r}</option>`).join('');
+  s.addEventListener('change', recalc);
+  return s;
+}
+
+function makeMealSelect(val='B') {
+  const s = document.createElement('select');
+  s.innerHTML = MEALS.map(m => `<option value="${m}" ${m===val?'selected':''}>${m}</option>`).join('');
+  s.addEventListener('change', recalc);
+  return s;
+}
+
+function numInput(val=0, cls='') {
+  const i = document.createElement('input');
+  i.type = 'number';
+  i.value = val;
+  i.min = 0;
+  if(cls) i.className = cls;
+  i.addEventListener('input', recalc);
+  return i;
+}
+
+function textInput(val='', placeholder='') {
+  const i = document.createElement('input');
+  i.type = 'text';
+  i.value = val;
+  i.placeholder = placeholder;
+  i.addEventListener('input', recalc);
+  return i;
+}
+
+function delBtn(row, callback) {
+  const b = document.createElement('button');
+  b.className = 'del-btn btn-danger';
+  b.innerHTML = '✕';
+  b.onclick = () => { row.remove(); if(callback) callback(); else recalc(); };
+  return b;
+}
+
+function td(content, style='') {
+  const c = document.createElement('td');
+  if(style) c.style.cssText = style;
+  if(content instanceof HTMLElement) c.appendChild(content);
+  else c.textContent = content;
+  return c;
+}
+
+// ── AUTOCOMPLETE ───────────────────────────────────────────────────────────
+function makeAutocomplete(catalog, nameKey, priceFields, onSelect) {
+  const wrap = document.createElement('div');
+  wrap.className = 'autocomplete-wrap';
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.placeholder = 'Search or type custom...';
+  inp.style.width = '100%';
+  const drop = document.createElement('div');
+  drop.className = 'autocomplete-dropdown';
+  wrap.appendChild(inp);
+  wrap.appendChild(drop);
+
+  let active = -1;
+
+  inp.addEventListener('focus', () => {
+    // Position dropdown using fixed coords
+    positionDropdown();
+  });
+
+  function positionDropdown() {
+    const rect = inp.getBoundingClientRect();
+    drop.style.top = (rect.bottom + 2) + 'px';
+    drop.style.left = rect.left + 'px';
+    drop.style.width = Math.max(rect.width, 300) + 'px';
+  }
+
+  inp.addEventListener('input', () => {
+    positionDropdown();
+    const q = inp.value.trim().toLowerCase();
+    drop.innerHTML = '';
+    active = -1;
+    if(!q) { drop.classList.remove('open'); return; }
+    const matches = catalog.filter(x => x[nameKey].toLowerCase().includes(q)).slice(0,40);
+    if(matches.length === 0 && q) {
+      const custom = document.createElement('div');
+      custom.className = 'autocomplete-custom';
+      custom.textContent = `✚ Use "${inp.value}" as custom item`;
+      custom.onclick = () => {
+        onSelect({[nameKey]: inp.value, custom: true}, priceFields);
+        drop.classList.remove('open');
+      };
+      drop.appendChild(custom);
+    } else {
+      matches.forEach((item, idx) => {
+        const el = document.createElement('div');
+        el.className = 'autocomplete-item';
+        const priceDisplay = priceFields.map(f => item[f] ? `${f}:¥${fmt(item[f])}` : '').filter(Boolean).join(' ');
+        el.innerHTML = `<span class="item-name">${item[nameKey]}</span><span class="item-price">${priceDisplay}</span>`;
+        el.addEventListener('mousedown', e => {
+          e.preventDefault();
+          onSelect(item, priceFields);
+          inp.value = item[nameKey];
+          drop.classList.remove('open');
+        });
+        drop.appendChild(el);
+      });
+    }
+    drop.classList.add('open');
+  });
+
+  inp.addEventListener('blur', () => setTimeout(() => drop.classList.remove('open'), 150));
+  inp.addEventListener('keydown', e => {
+    const items = drop.querySelectorAll('.autocomplete-item');
+    if(e.key === 'ArrowDown') { active = Math.min(active+1, items.length-1); items.forEach((it,i) => it.classList.toggle('selected', i===active)); e.preventDefault(); }
+    if(e.key === 'ArrowUp') { active = Math.max(active-1, 0); items.forEach((it,i) => it.classList.toggle('selected', i===active)); e.preventDefault(); }
+    if(e.key === 'Enter' && active >= 0) { items[active].dispatchEvent(new MouseEvent('mousedown', {bubbles:true})); e.preventDefault(); }
+    if(e.key === 'Escape') drop.classList.remove('open');
+  });
+
+  wrap.getInputValue = () => inp.value;
+  wrap.setInputValue = v => { inp.value = v; };
+  return wrap;
+}
+
+// ── HOTELS ─────────────────────────────────────────────────────────────────
+function renumberHotelNights() {
+  Array.from($('hotelRows').querySelectorAll('tr')).forEach((tr, i) => {
+    const nightTd = tr.querySelector('td.night-num');
+    if (nightTd) nightTd.textContent = i + 1;
+  });
+}
+
+let hotelRowCount = 0;
+function addHotelRow(data={}) {
+  try {
+  hotelRowCount++;
+  const tr = document.createElement('tr');
+  tr.dataset.type = 'hotel';
+  tr.draggable = true;
+
+  // Night number — static, auto-assigned, never editable
+  const nightTd = document.createElement('td');
+  nightTd.className = 'night-num mono';
+  nightTd.style.cssText = 'text-align:center;font-weight:600;color:var(--text3);';
+  nightTd.textContent = document.querySelectorAll('#hotelRows tr').length + 1;
+
+  const citySelect = makeCitySelect(data.city || '');
+  const hotelNameInput = textInput(data.hotelName || '', 'e.g. Park Hotel Tokyo');
+  hotelNameInput.style.width = '100%';
+  const mealSelect = makeMealSelect(data.meal || 'B');
+  const roomSelect = makeRoomTypeSelect(data.roomType || 'Twin');
+  const twinInput = numInput(data.twin || 32000);
+  const singleInput = numInput(data.single || 22000);
+  const guideInput = numInput(data.guide || 22000);
+  const suppCell = document.createElement('td');
+  suppCell.className = 'mono';
+  suppCell.style.textAlign = 'right';
+
+  function updateSupp() {
+    const s = (parseFloat(singleInput.value)||0)*2 - (parseFloat(twinInput.value)||0);
+    suppCell.textContent = '¥' + fmt(Math.max(0,s));
+    recalc();
+  }
+  twinInput.addEventListener('input', updateSupp);
+  singleInput.addEventListener('input', updateSupp);
+  citySelect.addEventListener('change', () => { syncCitiesFromHotels(); recalc(); });
+
+  tr.appendChild(dragHandleTd());
+  tr.appendChild(nightTd);
+  tr.appendChild(td(citySelect));
+  tr.appendChild(td(hotelNameInput));
+  tr.appendChild(td(mealSelect));
+  tr.appendChild(td(roomSelect));
+  tr.appendChild(td(twinInput));
+  tr.appendChild(td(singleInput));
+  tr.appendChild(td(guideInput));
+  tr.appendChild(suppCell);
+  const actTd = document.createElement('td');
+  actTd.appendChild(delBtn(tr, () => { renumberHotelNights(); updateNightsCount(); syncCitiesFromHotels(); recalc(); }));
+  tr.appendChild(actTd);
+
+  $('hotelRows').appendChild(tr);
+  updateNightsCount();
+  syncCitiesFromHotels();
+  updateSupp();
+  } catch(e) { console.error('addHotelRow error:', e); alert('Error adding row: ' + e.message); }
+}
+
+function getHotelRows() {
+  return Array.from($('hotelRows').querySelectorAll('tr')).map((tr, i) => {
+    const selects = tr.querySelectorAll('select');
+    const inputs = tr.querySelectorAll('input[type=number]');
+    const textInputs = tr.querySelectorAll('input[type=text]');
+    return {
+      night: i + 1,
+      city: selects[0] ? selects[0].value : '',
+      hotelName: textInputs[0] ? textInputs[0].value : '',
+      meal: selects[1] ? selects[1].value : '',
+      roomType: selects[2] ? selects[2].value : '',
+      twin: parseFloat(inputs[0]?.value)||0,
+      single: parseFloat(inputs[1]?.value)||0,
+      guide: parseFloat(inputs[2]?.value)||0,
+    };
+  });
+}
+
+// ── SERVICES ───────────────────────────────────────────────────────────────
+function addServiceRow(data={}) {
+  const tr = document.createElement('tr');
+  tr.dataset.type = 'service';
+  tr.draggable = true;
+
+  const dayInput = numInput(data.day || 1);
+  dayInput.style.width = '48px';
+
+  // City — read-only, driven by hotel night
+  const cityTd = document.createElement('td');
+  cityTd.className = 'row-city';
+  cityTd.style.cssText = 'color:var(--text2);font-size:12px;padding:6px 8px;white-space:nowrap;';
+
+  function updateCityFromDay() {
+    const nightCityMap = {};
+    Array.from(document.querySelectorAll('#hotelRows tr')).forEach((tr, i) => {
+      const cs = tr.querySelectorAll('select')[0];
+      nightCityMap[i + 1] = cs?.value || '';
+    });
+    cityTd.textContent = nightCityMap[parseInt(dayInput.value)] || '';
+  }
+  dayInput.addEventListener('change', () => { updateCityFromDay(); recalc(); });
+  updateCityFromDay();
+  if (data.city) cityTd.textContent = data.city;
+
+  const perPersonInput = numInput(data.perPerson || 0);
+  const perGroupInput = numInput(data.perGroup || 0);
+  const guideInput = numInput(data.guidePrice || 0);
+  const qtyInput = numInput(data.qty || 1);
+  qtyInput.style.width = '48px';
+
+  const nameCellTd = document.createElement('td');
+  const nameWrap = makeAutocomplete(SERVICES_DATA, 'name', ['adult','group'], (item) => {
+    perPersonInput.value = item.adult || 0;
+    perGroupInput.value = item.group || 0;
+    guideInput.value = item.adult || 0;
+    recalc();
+  });
+  if(data.name) nameWrap.setInputValue(data.name);
+  nameCellTd.appendChild(nameWrap);
+
+  tr.appendChild(dragHandleTd());
+  tr.appendChild(td(dayInput));
+  tr.appendChild(cityTd);
+  tr.appendChild(nameCellTd);
+  tr.appendChild(td(perPersonInput));
+  tr.appendChild(td(perGroupInput));
+  tr.appendChild(td(guideInput));
+  tr.appendChild(td(qtyInput));
+  const actTd = document.createElement('td');
+  actTd.appendChild(delBtn(tr));
+  tr.appendChild(actTd);
+
+  $('serviceRows').appendChild(tr);
+  recalc();
+}
+
+function getServiceRows() {
+  return Array.from($('serviceRows').querySelectorAll('tr')).map(tr => {
+    const inputs = tr.querySelectorAll('input[type=number]');
+    const nameInput = tr.querySelector('.autocomplete-wrap');
+    const cityTd = tr.querySelector('.row-city');
+    return {
+      day: parseFloat(inputs[0].value)||0,
+      city: cityTd ? cityTd.textContent : '',
+      name: nameInput ? nameInput.getInputValue() : '',
+      perPerson: parseFloat(inputs[1].value)||0,
+      perGroup: parseFloat(inputs[2].value)||0,
+      guidePrice: parseFloat(inputs[3].value)||0,
+      qty: parseFloat(inputs[4].value)||1,
+    };
+  });
+}
+
+// ── TRANSPORTS ─────────────────────────────────────────────────────────────
+function addTransportRow(data={}) {
+  const tr = document.createElement('tr');
+  tr.dataset.type = 'transport';
+  tr.draggable = true;
+
+  const dayInput = numInput(data.day || 1);
+  dayInput.style.width = '48px';
+
+  // City — read-only, driven by hotel night
+  const cityTd = document.createElement('td');
+  cityTd.className = 'row-city';
+  cityTd.style.cssText = 'color:var(--text2);font-size:12px;padding:6px 8px;white-space:nowrap;';
+
+  function updateCityFromDay() {
+    const nightCityMap = {};
+    Array.from(document.querySelectorAll('#hotelRows tr')).forEach((tr, i) => {
+      const cs = tr.querySelectorAll('select')[0];
+      nightCityMap[i + 1] = cs?.value || '';
+    });
+    cityTd.textContent = nightCityMap[parseInt(dayInput.value)] || '';
+  }
+  dayInput.addEventListener('change', () => { updateCityFromDay(); recalc(); });
+  updateCityFromDay();
+  if (data.city) cityTd.textContent = data.city;
+
+  const perPersonInput = numInput(data.perPerson || 0);
+  const perGroupInput = numInput(data.perGroup || 0);
+  const guideInput = numInput(data.guidePrice || 0);
+  const qtyInput = numInput(data.qty || 1);
+  qtyInput.style.width = '48px';
+
+  const nameCellTd = document.createElement('td');
+  const nameWrap = makeAutocomplete(TRANSPORTS_DATA, 'name', ['price'], (item) => {
+    perPersonInput.value = item.price || 0;
+    guideInput.value = item.price || 0;
+    recalc();
+  });
+  if(data.name) nameWrap.setInputValue(data.name);
+  nameCellTd.appendChild(nameWrap);
+
+  tr.appendChild(dragHandleTd());
+  tr.appendChild(td(dayInput));
+  tr.appendChild(cityTd);
+  tr.appendChild(nameCellTd);
+  tr.appendChild(td(perPersonInput));
+  tr.appendChild(td(perGroupInput));
+  tr.appendChild(td(guideInput));
+  tr.appendChild(td(qtyInput));
+  const actTd = document.createElement('td');
+  actTd.appendChild(delBtn(tr));
+  tr.appendChild(actTd);
+
+  $('transportRows').appendChild(tr);
+  recalc();
+}
+
+function getTransportRows() {
+  return Array.from($('transportRows').querySelectorAll('tr')).map(tr => {
+    const inputs = tr.querySelectorAll('input[type=number]');
+    const nameInput = tr.querySelector('.autocomplete-wrap');
+    const cityTd = tr.querySelector('.row-city');
+    return {
+      day: parseFloat(inputs[0].value)||0,
+      city: cityTd ? cityTd.textContent : '',
+      name: nameInput ? nameInput.getInputValue() : '',
+      perPerson: parseFloat(inputs[1].value)||0,
+      perGroup: parseFloat(inputs[2].value)||0,
+      guidePrice: parseFloat(inputs[3].value)||0,
+      qty: parseFloat(inputs[4].value)||1,
+    };
+  });
+}
+
+// ── GUIDES ─────────────────────────────────────────────────────────────────
+function addGuideRow(data={}, triggerRecalc=true) {
+  const tr = document.createElement('tr');
+  tr.dataset.type = 'guide';
+
+  const dayNum = data.day !== undefined ? data.day : ($('guideRows').children.length + 1);
+
+  // Day — static auto-number
+  const dayTd = document.createElement('td');
+  dayTd.className = 'night-num mono';
+  dayTd.style.cssText = 'text-align:center;font-weight:600;color:var(--text3);';
+  dayTd.textContent = dayNum;
+
+  // City — read-only, driven by hotel night; "Return" for last day
+  const cityTd = document.createElement('td');
+  cityTd.className = 'guide-city';
+  cityTd.style.cssText = 'color:var(--text2);font-size:12px;padding:6px 8px;';
+
+  const rateInput = numInput(data.rate !== undefined ? data.rate : getVal('guideDailyRate'));
+  const numInput2 = numInput(data.num !== undefined ? data.num : getVal('numGuides'));
+  numInput2.style.width = '48px';
+  const allowanceInput = numInput(data.allowance !== undefined ? data.allowance : getVal('guideDailyAllowance'));
+  const notesInput = textInput(data.notes || '', 'e.g. Pre-tour trains');
+  notesInput.style.width = '100%';
+  const extrasInput = numInput(data.extras || 0);
+  const totalCell = document.createElement('td');
+  totalCell.className = 'mono';
+  totalCell.style.textAlign = 'right';
+
+  function updateTotal() {
+    const rate = parseFloat(rateInput.value)||0;
+    const num = parseFloat(numInput2.value)||0;
+    const allow = parseFloat(allowanceInput.value)||0;
+    const extras = parseFloat(extrasInput.value)||0;
+    totalCell.textContent = '¥' + fmt((rate + allow + extras) * num);
+    recalc();
+  }
+  [rateInput, numInput2, allowanceInput, extrasInput].forEach(i => i.addEventListener('input', updateTotal));
+
+  tr.appendChild(dayTd);
+  tr.appendChild(cityTd);
+  tr.appendChild(td(rateInput));
+  tr.appendChild(td(numInput2));
+  tr.appendChild(td(allowanceInput));
+  tr.appendChild(td(notesInput));
+  tr.appendChild(td(extrasInput));
+  tr.appendChild(totalCell);
+  const actTd = document.createElement('td');
+  actTd.appendChild(delBtn(tr));
+  tr.appendChild(actTd);
+
+  $('guideRows').appendChild(tr);
+  if (triggerRecalc) updateTotal();
+}
+
+function getGuideRows() {
+  return Array.from($('guideRows').querySelectorAll('tr')).map((tr, i) => {
+    const inputs = tr.querySelectorAll('input');
+    const cityTd = tr.querySelector('.guide-city');
+    return {
+      day: i + 1,
+      city: cityTd ? cityTd.textContent : '',
+      rate: parseFloat(inputs[0]?.value)||0,
+      num: parseFloat(inputs[1]?.value)||1,
+      allowance: parseFloat(inputs[2]?.value)||0,
+      notes: inputs[3]?.value || '',
+      extras: parseFloat(inputs[4]?.value)||0,
+    };
+  });
+}
+
+// ── CALCULATION ENGINE ─────────────────────────────────────────────────────
+function calcGuideTotal() {
+  return getGuideRows().reduce((s,r) => s + (r.rate + r.allowance + r.extras) * r.num, 0);
+}
+
+function calcHotelCostForPAX(pax, hotels) {
+  const twins = Math.floor(pax / 2);
+  const singles = pax % 2;
+  let total = 0;
+  hotels.forEach(h => {
+    total += h.twin * twins + h.single * singles + h.guide * getVal('numGuides');
+  });
+  return total;
+}
+
+function calcServicesCostForPAX(pax, services) {
+  let total = 0;
+  services.forEach(s => {
+    total += (s.perPerson * pax + s.perGroup) * s.qty;
+  });
+  return total;
+}
+
+function calcServiceGuideCost(services) {
+  let total = 0;
+  services.forEach(s => {
+    total += s.guidePrice * s.qty * getVal('numGuides');
+  });
+  return total;
+}
+
+function calcTransportsCostForPAX(pax, transports) {
+  let total = 0;
+  transports.forEach(t => {
+    total += (t.perPerson * pax + t.perGroup) * t.qty;
+  });
+  return total;
+}
+
+function calcTransportGuideCost(transports) {
+  let total = 0;
+  transports.forEach(t => {
+    total += t.guidePrice * t.qty * getVal('numGuides');
+  });
+  return total;
+}
+
+function recalc() {
+  try {
+  const hotels = getHotelRows();
+  const services = getServiceRows();
+  const transports = getTransportRows();
+  const guideTotal = calcGuideTotal();
+  const eurRate = getVal('eurRate') || 175;
+  const margin = getVal('targetMargin') / 100;
+  const partnerPct = getVal('partnerMarkup') / 100;
+  const tax = 1 + (getVal('taxRate') || 10) / 100;
+
+  const partnerTaxable = document.getElementById('partnerTaxable').checked;
+
+  // Build totals table
+  const tbody = $('totalsBody');
+  const existingRows = Array.from(tbody.querySelectorAll('tr'));
+
+  for(let pax = 1; pax <= 30; pax++) {
+    const twins = Math.floor(pax / 2);
+    const singles = pax % 2;
+
+    // Raw costs — inputs already tax-inclusive, no multiplier
+    const hotelCost = calcHotelCostForPAX(pax, hotels);
+    const svcCost = calcServicesCostForPAX(pax, services) + calcServiceGuideCost(services);
+    const trnCost = calcTransportsCostForPAX(pax, transports) + calcTransportGuideCost(transports);
+
+    const totalCost = hotelCost + svcCost + trnCost + guideTotal;
+    const costPerPax = pax > 0 ? totalCost / pax : 0;
+    // Suggested based on gross margin target: price = cost / (1 - margin)
+    const suggested = margin < 1 ? costPerPax / (1 - margin) : costPerPax;
+
+    let tr2;
+    if(existingRows[pax-1]) {
+      tr2 = existingRows[pax-1];
+    } else {
+      tr2 = document.createElement('tr');
+      tr2.dataset.pax = pax;
+      // col 0: PAX
+      const paxTd = document.createElement('td');
+      paxTd.textContent = pax;
+      tr2.appendChild(paxTd);
+      // col 1: Twins
+      tr2.appendChild(document.createElement('td'));
+      // col 2: Singles
+      tr2.appendChild(document.createElement('td'));
+      // col 3: Hotels ¥
+      tr2.appendChild(document.createElement('td'));
+      // col 4: Services ¥
+      tr2.appendChild(document.createElement('td'));
+      // col 5: Transports ¥
+      tr2.appendChild(document.createElement('td'));
+      // col 6: Guides ¥
+      tr2.appendChild(document.createElement('td'));
+      // col 7: Total Cost
+      tr2.appendChild(document.createElement('td'));
+      // col 8: Cost/PAX
+      tr2.appendChild(document.createElement('td'));
+      // col 9: Suggested
+      const sugTd = document.createElement('td');
+      sugTd.className = 'suggested';
+      tr2.appendChild(sugTd);
+      // col 10: Your Price input
+      const priceTd = document.createElement('td');
+      const priceInp = document.createElement('input');
+      priceInp.type = 'number';
+      priceInp.placeholder = '—';
+      priceInp.value = manualPrices[pax] || '';
+      priceInp.addEventListener('input', e => {
+        manualPrices[pax] = parseFloat(e.target.value) || 0;
+        recalc();
+      });
+      priceTd.appendChild(priceInp);
+      tr2.appendChild(priceTd);
+      // col 11: EUR/PAX
+      const eurTd = document.createElement('td');
+      eurTd.className = 'eur';
+      tr2.appendChild(eurTd);
+      // col 12: Partner Comm ¥
+      tr2.appendChild(document.createElement('td'));
+      // col 13: Gross Margin ¥/PAX
+      tr2.appendChild(document.createElement('td'));
+      // col 14: Gross Margin %
+      tr2.appendChild(document.createElement('td'));
+      // col 15: Tax on Price ¥/PAX
+      tr2.appendChild(document.createElement('td'));
+      // col 16: Tax on Cost ¥/PAX
+      tr2.appendChild(document.createElement('td'));
+      // col 17: Net Margin ¥/PAX
+      tr2.appendChild(document.createElement('td'));
+      // col 18: Total Net Margin ¥
+      tr2.appendChild(document.createElement('td'));
+      tbody.appendChild(tr2);
+    }
+
+    const cells = tr2.querySelectorAll('td');
+    cells[1].textContent = twins;
+    cells[2].textContent = singles;
+    cells[3].textContent = '¥' + fmt(hotelCost);
+    cells[4].textContent = '¥' + fmt(svcCost);
+    cells[5].textContent = '¥' + fmt(trnCost);
+    cells[6].textContent = '¥' + fmt(guideTotal);
+    cells[7].textContent = '¥' + fmt(totalCost);
+    cells[8].textContent = '¥' + fmt(costPerPax);
+    cells[9].textContent = '¥' + fmt(suggested);
+
+    const myPrice = manualPrices[pax] || 0;
+    if(myPrice > 0) {
+      const totalPrice = myPrice * pax;
+      const partnerComm = myPrice * partnerPct * pax;
+      const partnerCommCost = partnerTaxable ? partnerComm * 0.9 : partnerComm;
+      const partnerCommPax = partnerCommCost / pax;
+
+      // Gross Margin = Total Price - Total Cost - Partner Commission (taxed if applicable)
+      const grossMarginPax = myPrice - costPerPax - partnerCommPax;
+      const grossMarginPct = (grossMarginPax / myPrice) * 100;
+
+      // Tax rate portion = (tax - 1), e.g. 1.10 - 1 = 0.10
+      const taxRate = tax - 1;
+      const taxOnPricePax = myPrice * taxRate;
+      const taxOnCostPax = costPerPax * taxRate;
+      const netTaxPax = taxOnPricePax - taxOnCostPax;
+
+      // Net Margin = Gross Margin - Net Tax
+      const netMarginPax = grossMarginPax - netTaxPax;
+      const totalNetMargin = netMarginPax * pax;
+
+      const color = grossMarginPct >= 20 ? 'var(--green)' : grossMarginPct >= 0 ? 'var(--yellow)' : 'var(--accent)';
+
+      cells[11].textContent = '€' + (myPrice / eurRate).toFixed(0);
+      cells[12].textContent = partnerPct > 0 ? '¥' + fmt(partnerCommCost) : '—';
+      cells[13].textContent = '¥' + fmt(grossMarginPax);
+      cells[13].style.color = color;
+      cells[14].textContent = grossMarginPct.toFixed(1) + '%';
+      cells[14].style.color = color;
+      cells[15].textContent = '¥' + fmt(taxOnPricePax);
+      cells[16].textContent = '¥' + fmt(taxOnCostPax);
+      cells[17].textContent = '¥' + fmt(netMarginPax);
+      cells[17].style.color = color;
+      cells[18].textContent = '¥' + fmt(totalNetMargin);
+      cells[18].style.color = color;
+    } else {
+      [11,12,13,14,15,16,17,18].forEach(i => {
+        cells[i].textContent = '—';
+        cells[i].style.color = '';
+      });
+    }
+  }
+  } catch(e) { console.error('recalc error:', e); }
+  recalcHotelCosts();
+  recalcSvcBudget();
+}
+
+// ── SERVICES & TRANSPORTS BUDGET TAB ──────────────────────────────────────
+function recalcSvcBudget() {
+  const paxEl = document.getElementById('sb-pax');
+  if (!paxEl) return;
+  const pax = parseFloat(paxEl.value) || 0;
+  const numGuides = getVal('numGuides');
+
+  function buildTable(rows, tbodyId, totalId) {
+    const tbody = document.getElementById(tbodyId);
+    const totalEl = document.getElementById(totalId);
+    if (!tbody) return 0;
+    tbody.innerHTML = '';
+    let grandTotal = 0;
+
+    rows.forEach(r => {
+      if (!r.name) return;
+      const guideTotal = r.guidePrice * r.qty * numGuides;
+      const total = (r.perPerson * pax + r.perGroup + guideTotal) * (r.qty || 1);
+      // Recalc without double-multiplying qty on perPerson/perGroup
+      const totalCalc = (r.perPerson * pax * r.qty) + (r.perGroup * r.qty) + guideTotal;
+      grandTotal += totalCalc;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align:left">${r.day || '—'}</td>
+        <td style="text-align:left;color:var(--text2)">${r.city || '—'}</td>
+        <td style="text-align:left">${r.name}</td>
+        <td>¥${fmt(r.perPerson)}</td>
+        <td>¥${fmt(r.perGroup)}</td>
+        <td>¥${fmt(r.guidePrice)}</td>
+        <td>${r.qty}</td>
+        <td>¥${fmt(guideTotal)}</td>
+        <td style="font-weight:700">¥${fmt(totalCalc)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (totalEl) totalEl.textContent = '¥' + fmt(grandTotal);
+    return grandTotal;
+  }
+
+  const svcTotal = buildTable(getServiceRows(), 'sbServicesBody', 'sb-svc-total');
+  const trnTotal = buildTable(getTransportRows(), 'sbTransportsBody', 'sb-trn-total');
+
+  const combinedEl = document.getElementById('sb-combined-total');
+  if (combinedEl) combinedEl.textContent = '¥' + fmt(svcTotal + trnTotal);
+}
+
+// ── HOTEL COSTS TAB ────────────────────────────────────────────────────────
+function getConsecutiveHotelGroups() {
+  const hotels = getHotelRows();
+  if (!hotels.length) return [];
+
+  const groups = [];
+  let cur = { city: hotels[0].city, hotelName: hotels[0].hotelName || '', roomType: hotels[0].roomType, meal: hotels[0].meal, twin: hotels[0].twin, single: hotels[0].single, guide: hotels[0].guide, nights: 1 };
+
+  for (let i = 1; i < hotels.length; i++) {
+    const h = hotels[i];
+    if (h.city === cur.city && h.roomType === cur.roomType) {
+      cur.nights++;
+      cur.twin = h.twin;
+      cur.single = h.single;
+      cur.guide = h.guide;
+      cur.meal = h.meal;
+      if (h.hotelName) cur.hotelName = h.hotelName;
+    } else {
+      groups.push(cur);
+      cur = { city: h.city, hotelName: h.hotelName || '', roomType: h.roomType, meal: h.meal, twin: h.twin, single: h.single, guide: h.guide, nights: 1 };
+    }
+  }
+  groups.push(cur);
+  return groups;
+}
+
+function recalcHotelCosts() {
+  const twins = parseFloat(document.getElementById('hc-twins')?.value) || 0;
+  const singles = parseFloat(document.getElementById('hc-singles')?.value) || 0;
+  const guides = parseFloat(document.getElementById('hc-guides')?.value) || 0;
+
+  const paxApprox = twins * 2 + singles;
+  const paxEl = document.getElementById('hc-pax-approx');
+  if (paxEl) paxEl.textContent = paxApprox;
+
+  const tbody = document.getElementById('hotelCostsBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const groups = getConsecutiveHotelGroups();
+  let grandTwins = 0, grandSingles = 0, grandGuides = 0;
+
+  groups.forEach(g => {
+    const twinsCost = g.twin * twins * g.nights;
+    const singlesCost = g.single * singles * g.nights;
+    const guidesCost = g.guide * guides * g.nights;
+    const total = twinsCost + singlesCost + guidesCost;
+    grandTwins += twinsCost;
+    grandSingles += singlesCost;
+    grandGuides += guidesCost;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left;font-weight:600">${g.city || '—'}</td>
+      <td style="text-align:left;color:var(--text2)">${g.roomType || '—'}</td>
+      <td style="text-align:left;color:var(--text2)">${g.meal || '—'}</td>
+      <td>${g.nights}</td>
+      <td>¥${fmt(g.twin)}</td>
+      <td>¥${fmt(g.single)}</td>
+      <td>¥${fmt(g.guide)}</td>
+      <td style="color:var(--green)">¥${fmt(twinsCost)}</td>
+      <td style="color:var(--green)">¥${fmt(singlesCost)}</td>
+      <td style="color:var(--green)">¥${fmt(guidesCost)}</td>
+      <td style="font-weight:700">¥${fmt(total)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const grandTotal = grandTwins + grandSingles + grandGuides;
+  const el = id => document.getElementById(id);
+  if (el('hc-total-twins')) el('hc-total-twins').textContent = '¥' + fmt(grandTwins);
+  if (el('hc-total-singles')) el('hc-total-singles').textContent = '¥' + fmt(grandSingles);
+  if (el('hc-total-guides')) el('hc-total-guides').textContent = '¥' + fmt(grandGuides);
+  if (el('hc-total-all')) el('hc-total-all').textContent = '¥' + fmt(grandTotal);
+}
+
+// ── DRAFT SERVER API ───────────────────────────────────────────────────────
+const DRAFTS_API = 'https://drafts.cocolotravel.com';
+const DRAFTS_KEY = '4c9aac2c8fb729428030741580913a4b';
+
+async function apiRequest(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', 'x-api-key': DRAFTS_KEY },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(DRAFTS_API + path, opts);
+  if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+  return res.json();
+}
+
+function getDraftState() {
+  return {
+    tourName: $('tourName').value,
+    tourRef: $('tourRef').value,
+    tourDate: $('tourDate').value,
+    numGuides: $('numGuides').value,
+    taxRate: $('taxRate').value,
+    eurRate: $('eurRate').value,
+    guideDailyRate: $('guideDailyRate').value,
+    guideDailyAllowance: $('guideDailyAllowance').value,
+    partnerMarkup: $('partnerMarkup').value,
+    partnerTaxable: $('partnerTaxable').checked,
+    targetMargin: $('targetMargin').value,
+    hotels: getHotelRows(),
+    services: getServiceRows(),
+    transports: getTransportRows(),
+    guides: getGuideRows(),
+    manualPrices,
+  };
+}
+
+function applyDraftState(s) {
+  $('tourName').value = s.tourName || '';
+  $('tourRef').value = s.tourRef || '';
+  $('tourDate').value = s.tourDate || '';
+  $('numGuides').value = s.numGuides || 1;
+  $('taxRate').value = s.taxRate || 10;
+  $('eurRate').value = s.eurRate || 175;
+  $('guideDailyRate').value = s.guideDailyRate || 35000;
+  $('guideDailyAllowance').value = s.guideDailyAllowance || 3000;
+  $('partnerMarkup').value = s.partnerMarkup || 0;
+  $('partnerTaxable').checked = s.partnerTaxable || false;
+  $('targetMargin').value = s.targetMargin || 30;
+  manualPrices = s.manualPrices || {};
+
+  $('hotelRows').innerHTML = '';
+  $('guideRows').innerHTML = '';
+  hotelRowCount = 0;
+  (s.hotels || []).forEach(h => addHotelRow(h));
+
+  $('serviceRows').innerHTML = '';
+  (s.services || []).forEach(sv => addServiceRow(sv));
+
+  $('transportRows').innerHTML = '';
+  (s.transports || []).forEach(t => addTransportRow(t));
+
+  if (s.guides && s.guides.length > 0) {
+    $('guideRows').innerHTML = '';
+    s.guides.forEach(g => addGuideRow(g));
+  }
+
+  setTimeout(() => {
+    $('totalsBody').querySelectorAll('tr').forEach(tr2 => {
+      const pax = parseInt(tr2.dataset.pax);
+      const inp = tr2.querySelector('input');
+      if (inp && manualPrices[pax]) inp.value = manualPrices[pax];
+    });
+    recalc();
+  }, 50);
+}
+
+async function saveDraftToServer() {
+  const nameInput = $('draftNameInput');
+  const tourName = $('tourName').value;
+  const raw = nameInput?.value.trim() || tourName.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_') || 'draft';
+  const name = raw || 'draft';
+
+  setDraftStatus('Saving…');
+  try {
+    await apiRequest('POST', `/drafts/${encodeURIComponent(name)}`, getDraftState());
+    showToast('✓ Draft saved: ' + name);
+    setDraftStatus('Saved ✓');
+    loadDraftList();
+  } catch(e) {
+    showToast('⚠ Save failed: ' + e.message);
+    setDraftStatus('Error: ' + e.message);
+  }
+}
+
+async function loadDraftFromServer(name) {
+  setDraftStatus('Loading…');
+  try {
+    const state = await apiRequest('GET', `/drafts/${encodeURIComponent(name)}`);
+    applyDraftState(state);
+    closeDraftModal();
+    showToast('✓ Draft loaded: ' + name);
+  } catch(e) {
+    setDraftStatus('Error: ' + e.message);
+  }
+}
+
+async function deleteDraftFromServer(name) {
+  if (!confirm(`Delete draft "${name}"?`)) return;
+  setDraftStatus('Deleting…');
+  try {
+    await apiRequest('DELETE', `/drafts/${encodeURIComponent(name)}`);
+    showToast('✓ Draft deleted');
+    loadDraftList();
+  } catch(e) {
+    setDraftStatus('Error: ' + e.message);
+  }
+}
+
+async function loadDraftList() {
+  const list = $('draftList');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">Loading…</div>';
+  try {
+    const { drafts } = await apiRequest('GET', '/drafts');
+    if (!drafts.length) {
+      list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">No saved drafts yet</div>';
+      return;
+    }
+    list.innerHTML = '';
+    drafts.forEach(d => {
+      const date = new Date(d.lastModified).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;padding:10px 22px;border-bottom:1px solid var(--border);gap:10px;';
+      row.innerHTML = `
+        <div style="flex:1;cursor:pointer;" onclick="loadDraftFromServer('${d.key}')">
+          <div style="font-weight:600;font-size:13px;color:var(--text)">${d.key.replace(/_/g,' ')}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${date}</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="loadDraftFromServer('${d.key}')">Load</button>
+        <button class="btn btn-ghost btn-sm btn-danger" onclick="deleteDraftFromServer('${d.key}')">✕</button>
+      `;
+      list.appendChild(row);
+    });
+  } catch(e) {
+    list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--accent);font-size:13px;">Could not connect to drafts server.<br><span style="color:var(--text3)">${e.message}</span></div>`;
+  }
+}
+
+function openDraftModal() {
+  $('draftModal').style.display = 'flex';
+  const tourName = $('tourName').value;
+  if (tourName) $('draftNameInput').value = tourName.replace(/[^a-zA-Z0-9\s\-_]/g,'').trim().replace(/\s+/g,'_');
+  loadDraftList();
+}
+
+function closeDraftModal() {
+  $('draftModal').style.display = 'none';
+}
+
+function setDraftStatus(msg) {
+  const el = $('draftModalStatus');
+  if (el) el.textContent = msg;
+}
+
+// Close modal on backdrop click
+document.addEventListener('click', e => {
+  if (e.target.id === 'draftModal') closeDraftModal();
+});
+
+// ── EXCEL EXPORT ───────────────────────────────────────────────────────────
+function exportExcel() {
+  const wb = XLSX.utils.book_new();
+  const hotels = getHotelRows();
+  const services = getServiceRows();
+  const transports = getTransportRows();
+  const guides = getGuideRows();
+  const eurRate = getVal('eurRate') || 175;
+  const margin = getVal('targetMargin') / 100;
+  const partnerPct = getVal('partnerMarkup') / 100;
+  const tax = 1 + (getVal('taxRate') || 10) / 100;
+  const guideTotal = calcGuideTotal() * tax;
+  const tourName = $('tourName').value || 'Quote';
+
+  // ── Dashboard sheet
+  const dashData = [
+    ['Tour Name', tourName],
+    ['Tour Ref', $('tourRef').value],
+    ['Season / Date', $('tourDate').value],
+    ['Guides', getVal('numGuides')],
+    ['Nights', getVal('numNights')],
+    ['Tax Rate %', getVal('taxRate')],
+    ['Partner %', getVal('partnerMarkup')],
+    ['Partner Subject to Tax', document.getElementById('partnerTaxable').checked ? 'Yes' : 'No'],
+    ['1 EUR =', getVal('eurRate')],
+    ['Guide Daily Rate', getVal('guideDailyRate')],
+    ['Guide Daily Allowance', getVal('guideDailyAllowance')],
+    ['Target Margin %', getVal('targetMargin')],
+  ];
+  const wsDash = XLSX.utils.aoa_to_sheet(dashData);
+  wsDash['!cols'] = [{wch:22}, {wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsDash, 'Dashboard');
+
+  // ── Hotels sheet
+  const hotelHeader = ['Night', 'City', 'Hotel Name', 'Meals', 'Room Type', 'Twin ¥', 'Single ¥', 'Guide ¥', 'Single Supplement ¥'];
+  const hotelAoa = [hotelHeader, ...hotels.map(h => [
+    h.night, h.city, h.hotelName, h.meal, h.roomType, h.twin, h.single, h.guide,
+    Math.max(0, h.single * 2 - h.twin)
+  ])];
+  const wsHotels = XLSX.utils.aoa_to_sheet(hotelAoa);
+  wsHotels['!cols'] = [{wch:6},{wch:16},{wch:28},{wch:8},{wch:20},{wch:10},{wch:10},{wch:10},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsHotels, 'Hotels');
+
+  // ── Services sheet
+  const svcHeader = ['Day', 'City', 'Name', 'Per Person ¥', 'Per Group ¥', 'Guide ¥', 'Qty', 'Total Guide ¥'];
+  const svcAoa = [svcHeader, ...services.map(s => [
+    s.day, s.city, s.name, s.perPerson, s.perGroup, s.guidePrice, s.qty,
+    s.guidePrice * s.qty * getVal('numGuides')
+  ])];
+  const wsServices = XLSX.utils.aoa_to_sheet(svcAoa);
+  wsServices['!cols'] = [{wch:5},{wch:16},{wch:40},{wch:12},{wch:12},{wch:10},{wch:5},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, wsServices, 'Services');
+
+  // ── Transports sheet
+  const trnHeader = ['Day', 'City', 'Name', 'Per Person ¥', 'Per Group ¥', 'Guide ¥', 'Qty', 'Total Guide ¥'];
+  const trnAoa = [trnHeader, ...transports.map(t => [
+    t.day, t.city, t.name, t.perPerson, t.perGroup, t.guidePrice, t.qty,
+    t.guidePrice * t.qty * getVal('numGuides')
+  ])];
+  const wsTransports = XLSX.utils.aoa_to_sheet(trnAoa);
+  wsTransports['!cols'] = [{wch:5},{wch:16},{wch:40},{wch:12},{wch:12},{wch:10},{wch:5},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, wsTransports, 'Transports');
+
+  // ── Guide Days sheet
+  const guideHeader = ['Day', 'City', 'Daily Rate ¥', '# Guides', 'Allowance ¥', 'Notes', 'Extras ¥', 'Total ¥'];
+  const guideAoa = [guideHeader, ...guides.map(g => [
+    g.day, g.city, g.rate, g.num, g.allowance, g.notes, g.extras,
+    (g.rate + g.allowance + g.extras) * g.num
+  ])];
+  const wsGuides = XLSX.utils.aoa_to_sheet(guideAoa);
+  wsGuides['!cols'] = [{wch:5},{wch:16},{wch:12},{wch:8},{wch:12},{wch:28},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, wsGuides, 'Guide Days');
+
+  // ── Totals sheet
+  const totHeader = ['PAX','Twins','Singles','Hotels ¥','Services ¥','Transports ¥','Guides ¥','Total Cost ¥','Cost/PAX ¥','Suggested ¥','Your Price ¥','EUR/PAX','Partner Comm ¥','Gross Margin ¥/PAX','Gross Margin %','Tax on Price ¥/PAX','Tax on Cost ¥/PAX','Net Margin ¥/PAX','Total Net Margin ¥'];
+  const totRows = [totHeader];
+  const partnerTaxableXl = document.getElementById('partnerTaxable').checked;
+  for(let pax=1; pax<=30; pax++) {
+    const twins = Math.floor(pax/2);
+    const singles = pax%2;
+    const hotelCost = calcHotelCostForPAX(pax, hotels);
+    const svcCost = (calcServicesCostForPAX(pax, services) + calcServiceGuideCost(services));
+    const trnCost = (calcTransportsCostForPAX(pax, transports) + calcTransportGuideCost(transports));
+    const totalCost = hotelCost + svcCost + trnCost + guideTotal;
+    const costPerPax = totalCost / pax;
+    const suggested = margin < 1 ? costPerPax / (1 - margin) : costPerPax;
+    const myPrice = manualPrices[pax] || null;
+    if(myPrice) {
+      const partnerComm = myPrice * partnerPct * pax;
+      const partnerCommTaxed = partnerTaxableXl ? partnerComm * 0.9 : partnerComm;
+      const partnerCommPax = partnerCommTaxed / pax;
+      const grossMarginPax = myPrice - costPerPax - partnerCommPax;
+      const grossMarginPct = grossMarginPax / myPrice;
+      const taxRate = tax - 1;
+      const taxOnPricePax = myPrice * taxRate;
+      const taxOnCostPax = costPerPax * taxRate;
+      const netMarginPax = grossMarginPax - (taxOnPricePax - taxOnCostPax);
+      totRows.push([pax,twins,singles,Math.round(hotelCost),Math.round(svcCost),Math.round(trnCost),Math.round(guideTotal),Math.round(totalCost),Math.round(costPerPax),Math.round(suggested),myPrice,Math.round(myPrice/eurRate),Math.round(partnerCommTaxed),Math.round(grossMarginPax),grossMarginPct,Math.round(taxOnPricePax),Math.round(taxOnCostPax),Math.round(netMarginPax),Math.round(netMarginPax*pax)]);
+    } else {
+      totRows.push([pax,twins,singles,Math.round(hotelCost),Math.round(svcCost),Math.round(trnCost),Math.round(guideTotal),Math.round(totalCost),Math.round(costPerPax),Math.round(suggested),'','','','','','','','','']);
+    }
+  }
+  const wsTotals = XLSX.utils.aoa_to_sheet(totRows);
+  wsTotals['!cols'] = [{wch:5},{wch:6},{wch:7},{wch:12},{wch:12},{wch:14},{wch:12},{wch:12},{wch:10},{wch:12},{wch:12},{wch:8},{wch:14},{wch:16},{wch:14},{wch:16},{wch:16},{wch:14},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, wsTotals, 'Totals');
+
+  const filename = (tourName.replace(/[^a-zA-Z0-9\-_\s]/g,'')).trim() + '_Quote.xlsx';
+  XLSX.writeFile(wb, filename);
+  showToast('✓ Excel exported: ' + filename);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+function init() {
+  // Default sample rows (guide rows auto-created via syncGuideDays)
+  addHotelRow({night:1, city:'', meal:'B', roomType:'Twin', twin:0, single:0, guide:0});
+  addHotelRow({night:2, city:'', meal:'B', roomType:'Twin', twin:0, single:0, guide:0});
+  addHotelRow({night:3, city:'', meal:'B', roomType:'Twin', twin:0, single:0, guide:0});
+  addHotelRow({night:4, city:'', meal:'B', roomType:'Twin', twin:0, single:0, guide:0});
+
+  // Wire up drag-and-drop for all three tables
+  setupDragDrop($('hotelRows'), () => { renumberHotelNights(); updateNightsCount(); syncCitiesFromHotels(); recalc(); });
+  setupDragDrop($('serviceRows'), recalc);
+  setupDragDrop($('transportRows'), recalc);
+
+  recalc();
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+loadCatalogs();
+</script>
+</body>
+</html>
