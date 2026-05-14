@@ -602,6 +602,7 @@
     <button class="btn btn-secondary btn-sm" onclick="newQuote()">＋ New</button>
     <button class="btn btn-secondary btn-sm" onclick="openDraftModal()">📁 Drafts</button>
     <button class="btn btn-secondary btn-sm" onclick="saveDraftToServer()">💾 Save Draft</button>
+    <button class="btn btn-blue btn-sm" onclick="exportProforma()">⬇ Pro-forma</button>
     <button class="btn btn-green btn-sm" onclick="exportExcel()">⬇ Export Excel</button>
   </div>
 </header>
@@ -2309,6 +2310,120 @@ function exportExcel() {
   const filename = (tourName.replace(/[^a-zA-Z0-9\-_\s]/g,'')).trim() + '_Quote.xlsx';
   XLSX.writeFile(wb, filename);
   showToast('✓ Excel exported: ' + filename);
+}
+
+// ── PRO-FORMA EXPORT ───────────────────────────────────────────────────────
+function exportProforma() {
+  const hotels    = getHotelRows();
+  const services  = getServiceRows();
+  const transports = getTransportRows();
+  const hotelGroups = getConsecutiveHotelGroups();
+  const tourName  = $('tourName').value || 'quote';
+
+  // ── Itinéraire ──
+  const iRows = hotels.map((h, i) => {
+    const day = String(i + 1).padStart(2, '0');
+    return `| ${day} | ${h.city} | ${h.meal} |`;
+  });
+  if (hotels.length) {
+    const lastDay  = String(hotels.length + 1).padStart(2, '0');
+    const lastMeal = hotels[hotels.length - 1].meal;
+    iRows.push(`| ${lastDay} |  | ${lastMeal} |`);
+  }
+
+  // ── Hotels ──
+  const hRows = hotelGroups.map(g =>
+    `| ${g.city} | ${g.hotelName || '—'} | ${g.nights} | ${g.meal} |`
+  );
+
+  // ── Services Inclus ──
+  const allItems = [
+    ...services.map(s => ({ day: s.day, name: s.name })),
+    ...transports.map(t => ({ day: t.day, name: t.name })),
+  ].filter(x => x.name).sort((a, b) => a.day - b.day);
+  const serviceLines = allItems.map((item, i) => `${i + 1}. ${item.name}`).join('\n');
+
+  // ── Single supplement: (sum of single prices × 2) − sum of twin prices ──
+  const totalSingle = hotels.reduce((s, h) => s + h.single, 0);
+  const totalTwin   = hotels.reduce((s, h) => s + h.twin, 0);
+  const suppFmt     = Math.max(0, Math.round(totalSingle * 2 - totalTwin)).toLocaleString('ja-JP');
+
+  // ── PAX pricing (only manually entered rows) ──
+  const paxRows = [];
+  for (let pax = 1; pax <= 30; pax++) {
+    if (manualPrices[pax]) {
+      paxRows.push(`| ${pax} | ${Math.round(manualPrices[pax]).toLocaleString('ja-JP')} JPY |`);
+    }
+  }
+
+  // ── Nuit supplémentaire: first twin price per unique city ──
+  const seenCities = new Set();
+  const extraRows  = [];
+  hotelGroups.forEach(g => {
+    if (g.city && !seenCities.has(g.city)) {
+      seenCities.add(g.city);
+      extraRows.push(`| ${g.city} | ${Math.round(g.twin).toLocaleString('ja-JP')} JPY | ${g.meal} |`);
+    }
+  });
+
+  // ── Assemble markdown ──
+  const md =
+`[Voir conditions générales de vente.](https://cloud.cocolotravel.com/s/CbSiZSDaLoxszmq)
+
+## Itinéraire
+
+| Jour | Nuitée | Repas |
+|------|--------|-------|
+${iRows.join('\n')}
+
+## Hotels
+
+| Ville | Hôtel | Nuits | Repas |
+|-------|-------|-------|-------|
+${hRows.join('\n')}
+
+## Services Inclus
+
+${serviceLines}
+
+## Tarifs
+
+Base TWIN. Supplément chambre single ${suppFmt} JPY
+
+| Base PAX | Prix |
+|----------|------|
+${paxRows.join('\n')}
+
+### Transferts aéroports
+
+Prix par taxi pour maximum 4 personnes avec 1 bagage par personne dans le sens aéroport - hôtel et hôtel - aéroport
+
+| Trajet | Prix |
+|--------|------|
+| Haneda - Tokyo | 11,700 JPY |
+| Narita - Tokyo | 19,500 JPY |
+| Kansai - Osaka | 19,500 JPY |
+| Kansai - Kyoto | 28,600 JPY |
+
+### Nuit supplémentaire
+
+Prix par nuit, par chambre sur la base d'une TWIN (2 personnes).
+
+| Ville | Prix | Repas |
+|-------|------|-------|
+${extraRows.join('\n')}
+`;
+
+  // ── Download ──
+  const filename = tourName.replace(/[^a-zA-Z0-9\-_\s]/g, '').trim() + ' - pro-forma.md';
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ Pro-forma exported: ' + filename);
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
