@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cocolo Travel — Quote Generator</title>
+<link rel="icon" type="image/svg+xml" href="https://assets.cocolotravel.com/logos/svg/logo_cloud_logo_full_sumi.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -108,6 +109,11 @@
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+  .header-mark {
+    height: 26px;
+    width: auto;
+    display: block;
   }
   .header-logo {
     font-family: var(--font-style-roslindale), serif;
@@ -643,6 +649,7 @@
 
 <header>
   <div class="header-brand">
+    <img src="https://assets.cocolotravel.com/logos/svg/logo_cloud_logo_full_washi.svg" alt="" class="header-mark">
     <div class="header-logo">cocolo<span>travel</span></div>
     <div class="header-pill">Quote Generator</div>
   </div>
@@ -1044,6 +1051,7 @@
 <div class="toast" id="toast"></div>
 
 <div id="loadingOverlay" style="position:fixed;inset:0;background:rgba(247,245,218,0.95);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+  <img src="https://assets.cocolotravel.com/logos/svg/logo_cloud_logo_full_sumi.svg" alt="" style="height:48px;width:auto;">
   <div style="font-family:var(--font-style-roslindale),serif;font-size:22px;color:var(--text)">cocolo<span style="color:var(--gleam)">travel</span></div>
   <div style="font-size:13px;color:var(--text3)">Loading catalogs…</div>
 </div>
