@@ -2368,48 +2368,48 @@ function exportProforma() {
 
   // ── Assemble markdown ──
   const md =
-`[Voir conditions générales de vente.](https://cloud.cocolotravel.com/s/CbSiZSDaLoxszmq)
+`[See general terms and conditions of sale.](https://cloud.cocolotravel.com/s/CbSiZSDaLoxszmq)
 
-## Itinéraire
+## Itinerary
 
-| Jour | Nuitée | Repas |
+| Day | Overnight | Meals |
 |------|--------|-------|
 ${iRows.join('\n')}
 
 ## Hotels
 
-| Ville | Hôtel | Nuits | Repas |
+| City | Hotel | Nights | Meals |
 |-------|-------|-------|-------|
 ${hRows.join('\n')}
 
-## Services Inclus
+## Included Services
 
 ${serviceLines}
 
-## Tarifs
+## Rates
 
-Base TWIN. Supplément chambre single ${suppFmt} JPY
+TWIN basis. Single room supplement ${suppFmt} JPY
 
-| Base PAX | Prix |
+| PAX Base | Price |
 |----------|------|
 ${paxRows.join('\n')}
 
-### Transferts aéroports
+### Airport Transfers
 
-Prix par taxi pour maximum 4 personnes avec 1 bagage par personne dans le sens aéroport - hôtel et hôtel - aéroport
+Price per taxi for a maximum of 4 people with 1 bag per person, in both directions (airport - hotel and hotel - airport)
 
-| Trajet | Prix |
+| Route | Price |
 |--------|------|
 | Haneda - Tokyo | 11,700 JPY |
 | Narita - Tokyo | 19,500 JPY |
 | Kansai - Osaka | 19,500 JPY |
 | Kansai - Kyoto | 28,600 JPY |
 
-### Nuit supplémentaire
+### Additional Night
 
-Prix par nuit, par chambre sur la base d'une TWIN (2 personnes).
+Price per night, per room, based on a TWIN room (2 people).
 
-| Ville | Prix | Repas |
+| City | Price | Meals |
 |-------|------|-------|
 ${extraRows.join('\n')}
 `;
