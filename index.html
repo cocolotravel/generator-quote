@@ -2337,11 +2337,12 @@ function exportProforma() {
   );
 
   // ── Services Inclus ──
+  const capitalizeWords = str => str.replace(/\S+/g, w => w.charAt(0).toUpperCase() + w.slice(1));
   const allItems = [
-    ...services.map(s => ({ day: s.day, name: s.name })),
-    ...transports.map(t => ({ day: t.day, name: t.name })),
+    ...services.map(s => ({ day: s.day, city: s.city, name: s.name })),
+    ...transports.map(t => ({ day: t.day, city: t.city, name: t.name })),
   ].filter(x => x.name).sort((a, b) => a.day - b.day);
-  const serviceLines = allItems.map((item, i) => `${i + 1}. ${item.name}`).join('\n');
+  const serviceLines = allItems.map((item, i) => `${i + 1}. Day ${item.day} - ${capitalizeWords(item.name)} - ${item.city}`).join('\n');
 
   // ── Single supplement: (sum of single prices × 2) − sum of twin prices ──
   const totalSingle = hotels.reduce((s, h) => s + h.single, 0);
@@ -2356,15 +2357,13 @@ function exportProforma() {
     }
   }
 
-  // ── Nuit supplémentaire: first twin price per unique city ──
-  const seenCities = new Set();
-  const extraRows  = [];
-  hotelGroups.forEach(g => {
-    if (g.city && !seenCities.has(g.city)) {
-      seenCities.add(g.city);
-      extraRows.push(`| ${g.city} | ${Math.round(g.twin).toLocaleString('ja-JP')} JPY | ${g.meal} |`);
-    }
-  });
+  // ── Nuit supplémentaire: first and last city only, twin price + 20% markup ──
+  const extraGroups = hotelGroups.length > 1
+    ? [hotelGroups[0], hotelGroups[hotelGroups.length - 1]]
+    : hotelGroups;
+  const extraRows = extraGroups.filter(g => g.city).map(g =>
+    `| ${g.city} | ${Math.round(g.twin * 1.2).toLocaleString('ja-JP')} JPY | ${g.meal} |`
+  );
 
   // ── Assemble markdown ──
   const md =
