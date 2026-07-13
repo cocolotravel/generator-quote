@@ -6,28 +6,75 @@
 <title>Cocolo Travel — Quote Generator</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  @font-face {
+    font-family: "Roslindale Variable";
+    src: url("https://assets.cocolotravel.com/fonts/RoslindaleVariable[opsz,slnt,wdth,wght].woff2") format("woff2-variations");
+    font-weight: 200 900;
+    font-stretch: 75% 125%;
+    font-display: swap;
+  }
+
   :root {
-    --bg: #f5f2ed;
-    --surface: #ffffff;
-    --surface2: #faf8f5;
-    --border: #e2ddd6;
-    --border2: #ccc7be;
-    --text: #1a1714;
-    --text2: #5c5750;
-    --text3: #9b9490;
-    --accent: #c84b2f;
-    --accent2: #e8603f;
-    --accent-bg: #fdf1ee;
+    /* ── Cocolo Travel brand tokens (https://assets.cocolotravel.com/brand/tokens.css) ── */
+    --color-background-primary: #fffef5;
+    --color-background-secondary: #f7f5da;
+    --color-background-dark-mode: #1b3848;
+    --color-text-primary: #1b3848;
+    --color-text-on-dark: #fffef5;
+    --color-text-support: #8a9a82;
+    --color-border-default: #fffef5;
+    --color-border-subtle: #1b3848;
+    --color-brand-white: #ffffff;
+    --color-brand-kin: #ffc916;
+    --color-brand-sumi: #1b3848;
+    --color-brand-millennium-washi: #f7f5da;
+    --color-brand-kodama: #8a9a82;
+    --color-brand-washi: #fffef5;
+    --color-sumi-60: rgba(27, 56, 72, 0.6); /* sanctioned opacity derivative of Sumi, pending in tokens.css */
+
+    --font-style-roslindale: "Roslindale Variable";
+    --font-style-inter: "Inter";
+    --font-weights-extralight: 200;
+    --font-weights-light: 300;
+    --font-weights-regular: 400;
+    --font-weights-semibold: 600;
+    --font-weights-bold: 700;
+    --font-weights-black: 900;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-base: 16px;
+    --font-size-h5: 24px;
+    --font-size-h4: 32px;
+    --font-size-h3: 36px;
+    --font-size-h2: 48px;
+    --font-size-h1: 64px;
+
+    /* ── App aliases onto the brand tokens (kept so existing rules below don't all need renaming) ── */
+    --bg: var(--color-background-secondary);
+    --surface: var(--color-background-primary);
+    --surface2: var(--color-background-secondary);
+    --border: var(--color-border-subtle);
+    --border2: var(--color-border-subtle);
+    --text: var(--color-text-primary);
+    --text2: var(--color-sumi-60);
+    --text3: var(--color-sumi-60);
+    --wash: var(--color-background-secondary);
+    --gleam: var(--color-brand-kin);
+    --hover-wash: rgba(27, 56, 72, 0.06);
+
+    /* Functional data colors — kept muted, scoped to the dense Pricing Summary table only */
     --green: #2d6a4f;
     --green-bg: #eaf4ef;
     --blue: #1d4e89;
     --blue-bg: #edf2fa;
     --yellow: #b5830a;
     --yellow-bg: #fdf6e3;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
-    --shadow-lg: 0 4px 24px rgba(0,0,0,0.10);
+    --red: #9c4a3f;
+
+    --shadow: 0 1px 3px rgba(27,56,72,0.08), 0 4px 16px rgba(27,56,72,0.05);
+    --shadow-lg: 0 4px 24px rgba(27,56,72,0.12);
     --radius: 8px;
     --radius-sm: 4px;
   }
@@ -35,7 +82,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-style-inter), sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -46,7 +93,7 @@
   /* HEADER */
   header {
     background: var(--text);
-    color: white;
+    color: var(--color-text-on-dark);
     padding: 0 32px;
     display: flex;
     align-items: center;
@@ -55,7 +102,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(27,56,72,0.3);
   }
   .header-brand {
     display: flex;
@@ -63,18 +110,18 @@
     gap: 12px;
   }
   .header-logo {
-    font-family: 'DM Serif Display', serif;
+    font-family: var(--font-style-roslindale), serif;
     font-size: 18px;
     letter-spacing: -0.3px;
-    color: white;
+    color: var(--color-text-on-dark);
   }
   .header-logo span {
-    color: var(--accent2);
+    color: var(--gleam);
   }
   .header-pill {
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: rgba(255,255,255,0.7);
+    background: rgba(255,254,245,0.12);
+    border: 1px solid rgba(255,254,245,0.2);
+    color: rgba(255,254,245,0.7);
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.5px;
@@ -95,13 +142,13 @@
     align-items: center;
     gap: 0;
     padding: 0 32px;
-    border-bottom: 2px solid rgba(255,255,255,0.08);
+    border-bottom: 2px solid rgba(255,254,245,0.08);
   }
   .tab-btn {
     background: none;
     border: none;
-    color: rgba(255,255,255,0.5);
-    font-family: 'DM Sans', sans-serif;
+    color: rgba(255,254,245,0.5);
+    font-family: var(--font-style-inter), sans-serif;
     font-size: 13px;
     font-weight: 500;
     padding: 10px 18px;
@@ -113,19 +160,20 @@
     align-items: center;
     gap: 7px;
   }
-  .tab-btn:hover { color: rgba(255,255,255,0.8); }
+  .tab-btn:hover { color: rgba(255,254,245,0.8); }
   .tab-btn.active {
-    color: white;
-    border-bottom-color: var(--accent2);
+    color: var(--color-text-on-dark);
+    border-bottom-color: var(--gleam);
   }
   .tab-badge {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255,254,245,0.15);
     border-radius: 10px;
     padding: 1px 6px;
     font-size: 10px;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-style-inter), sans-serif;
+    font-variant-numeric: tabular-nums;
   }
-  .tab-btn.active .tab-badge { background: var(--accent); }
+  .tab-btn.active .tab-badge { background: var(--gleam); color: var(--color-text-primary); }
 
   /* LAYOUT */
   .tab-panel {
@@ -162,7 +210,7 @@
     gap: 12px;
   }
   .section-title {
-    font-family: 'DM Serif Display', serif;
+    font-family: var(--font-style-roslindale), serif;
     font-size: 16px;
     color: var(--text);
     display: flex;
@@ -170,17 +218,17 @@
     gap: 8px;
   }
   .section-num {
-    background: var(--accent);
-    color: white;
+    background: var(--gleam);
+    color: var(--color-text-primary);
     width: 22px;
     height: 22px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-style-inter), sans-serif;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 600;
     flex-shrink: 0;
   }
   .section-body {
@@ -211,20 +259,20 @@
     border: 1px solid var(--border2);
     border-radius: var(--radius-sm);
     padding: 7px 10px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-style-inter), sans-serif;
     font-size: 13px;
     color: var(--text);
-    background: white;
+    background: var(--color-brand-white);
     width: 100%;
     transition: border-color 0.15s, box-shadow 0.15s;
     outline: none;
   }
   input:focus, select:focus, textarea:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(200, 75, 47, 0.1);
+    border-color: var(--color-text-primary);
+    box-shadow: 0 0 0 3px rgba(27, 56, 72, 0.12);
   }
   input[type=number] {
-    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
   }
 
   /* TABLES */
@@ -258,7 +306,7 @@
     border-radius: 3px;
   }
   .data-table input[type=number] {
-    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
     font-size: 12px;
   }
 
@@ -268,7 +316,7 @@
   }
   .autocomplete-dropdown {
     position: fixed;
-    background: white;
+    background: var(--color-brand-white);
     border: 1px solid var(--border2);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-lg);
@@ -290,10 +338,10 @@
     gap: 8px;
   }
   .autocomplete-item:last-child { border-bottom: none; }
-  .autocomplete-item:hover, .autocomplete-item.selected { background: var(--accent-bg); }
+  .autocomplete-item:hover, .autocomplete-item.selected { background: var(--wash); }
   .autocomplete-item .item-name { flex: 1; }
   .autocomplete-item .item-price {
-    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
     font-size: 11px;
     color: var(--text3);
     white-space: nowrap;
@@ -302,11 +350,11 @@
     padding: 7px 10px;
     cursor: pointer;
     font-size: 12px;
-    color: var(--accent);
+    color: var(--color-text-primary);
     font-weight: 500;
     border-top: 1px solid var(--border);
   }
-  .autocomplete-custom:hover { background: var(--accent-bg); }
+  .autocomplete-custom:hover { background: var(--wash); }
 
   /* BUTTONS */
   .btn {
@@ -315,7 +363,7 @@
     gap: 6px;
     padding: 7px 14px;
     border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-style-inter), sans-serif;
     font-size: 12.5px;
     font-weight: 500;
     cursor: pointer;
@@ -324,32 +372,32 @@
     white-space: nowrap;
   }
   .btn-primary {
-    background: var(--accent);
-    color: white;
+    background: var(--color-text-primary);
+    color: var(--color-text-on-dark);
   }
-  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:hover { opacity: 0.88; }
   .btn-secondary {
     background: var(--surface2);
     color: var(--text2);
     border: 1px solid var(--border2);
   }
-  .btn-secondary:hover { background: var(--border); }
+  .btn-secondary:hover { background: var(--hover-wash); }
   .btn-ghost {
     background: transparent;
     color: var(--text3);
     padding: 4px 8px;
   }
   .btn-ghost:hover { background: var(--surface2); color: var(--text); }
-  .btn-danger { color: var(--accent); }
-  .btn-danger:hover { background: var(--accent-bg); }
+  .btn-danger { color: var(--color-text-primary); }
+  .btn-danger:hover { background: var(--wash); }
   .btn-green {
     background: var(--green);
-    color: white;
+    color: var(--color-text-on-dark);
   }
   .btn-green:hover { opacity: 0.9; }
   .btn-blue {
     background: var(--blue);
-    color: white;
+    color: var(--color-text-on-dark);
   }
   .btn-blue:hover { opacity: 0.9; }
   .btn-sm {
@@ -369,20 +417,20 @@
     transition: all 0.15s;
   }
   .add-row-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-bg);
+    border-color: var(--color-text-primary);
+    color: var(--color-text-primary);
+    background: var(--wash);
   }
 
   /* MONO VALUE */
   .mono {
-    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
     font-size: 12px;
   }
 
   /* SIDEBAR / TOTALS */
   .sidebar-title {
-    font-family: 'DM Serif Display', serif;
+    font-family: var(--font-style-roslindale), serif;
     font-size: 17px;
     margin-bottom: 16px;
     padding-bottom: 12px;
@@ -400,7 +448,7 @@
   }
   .totals-table th {
     background: var(--text);
-    color: white;
+    color: var(--color-text-on-dark);
     padding: 9px 14px;
     font-size: 11px;
     font-weight: 600;
@@ -412,12 +460,12 @@
     z-index: 2;
   }
   .totals-table th:first-child { text-align: center; min-width: 50px; }
-  .totals-table th.col-pax { text-align: center; background: var(--accent); }
+  .totals-table th.col-pax { text-align: center; background: var(--gleam); color: var(--color-text-primary); }
   .totals-table td {
     border-bottom: 1px solid var(--border);
     padding: 7px 14px;
     text-align: right;
-    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
     font-size: 12.5px;
     vertical-align: middle;
   }
@@ -428,13 +476,13 @@
     color: var(--text);
     font-size: 13px;
   }
-  .totals-table tr:hover td { background: var(--accent-bg); }
-  .totals-table tr:hover td:first-child { background: var(--accent-bg); }
+  .totals-table tr:hover td { background: var(--wash); }
+  .totals-table tr:hover td:first-child { background: var(--wash); }
   .totals-table td.suggested { color: var(--green); font-weight: 500; }
   .totals-table td input[type=number] {
     width: 120px;
     padding: 4px 7px;
-    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
     font-size: 12px;
     border: 1.5px solid #e8d49a;
     border-radius: 3px;
@@ -478,7 +526,7 @@
     margin-bottom: 4px;
   }
   .summary-card .val {
-    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
     font-size: 18px;
     font-weight: 500;
     color: var(--text);
@@ -503,7 +551,7 @@
     margin-bottom: 2px;
   }
   .summary-item .val {
-    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
     font-size: 13px;
     font-weight: 500;
     color: var(--text);
@@ -522,7 +570,7 @@
     left: 50%;
     transform: translateX(-50%) translateY(80px);
     background: var(--text);
-    color: white;
+    color: var(--color-text-on-dark);
     padding: 10px 20px;
     border-radius: 30px;
     font-size: 13px;
@@ -553,7 +601,7 @@
     border-radius: 3px;
     transition: all 0.12s;
   }
-  .del-btn:hover { color: var(--accent); background: var(--accent-bg); }
+  .del-btn:hover { color: var(--color-text-primary); background: var(--wash); }
 
   .drag-handle {
     cursor: grab;
@@ -565,7 +613,7 @@
   }
   .drag-handle:active { cursor: grabbing; }
   tr.dragging { opacity: 0.4; }
-  tr.drag-over td { border-top: 2px solid var(--accent); }
+  tr.drag-over td { border-top: 2px solid var(--color-text-primary); }
   input[readonly] {
     background: var(--surface2) !important;
     color: var(--text3) !important;
@@ -667,7 +715,7 @@
           <div class="field-group">
             <label>Partner Subject to Tax</label>
             <div style="display:flex;align-items:center;gap:8px;padding:7px 0">
-              <input type="checkbox" id="partnerTaxable" onchange="recalc()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+              <input type="checkbox" id="partnerTaxable" onchange="recalc()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--color-text-primary)">
               <span style="font-size:12px;color:var(--text3)">Apply 10% tax on partner commission</span>
             </div>
           </div>
@@ -807,7 +855,7 @@
     <div class="pricing-hint">
       <span><span class="dot" style="background:var(--green)"></span> Suggested = Cost/PAX ÷ (1 − margin%)</span>
       <span><span class="dot" style="background:var(--yellow)"></span> Your Price — enter manually per PAX count</span>
-      <span style="margin-left:auto;color:var(--accent)">Margin colors: <b style="color:var(--green)">green ≥ 20%</b> · <b style="color:var(--yellow)">yellow ≥ 0%</b> · <b style="color:var(--accent)">red = loss</b></span>
+      <span style="margin-left:auto">Margin colors: <b style="color:var(--green)">green ≥ 20%</b> · <b style="color:var(--yellow)">yellow ≥ 0%</b> · <b style="color:var(--red)">red = loss</b></span>
     </div>
 
     <table class="totals-table" id="totalsTable">
@@ -848,7 +896,7 @@
     <div style="margin-bottom:36px;">
       <div style="display:flex;align-items:flex-end;gap:24px;margin-bottom:16px;flex-wrap:wrap;">
         <div>
-          <div style="font-family:'DM Serif Display',serif;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="section-num">1</span> Hotels Budget</div>
+          <div style="font-family:var(--font-style-roslindale),serif;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="section-num">1</span> Hotels Budget</div>
           <div style="font-size:12px;color:var(--text3);margin-top:3px;">Auto-populated from Hotels section · Consecutive same city+type stays grouped</div>
         </div>
         <div style="display:flex;gap:16px;margin-left:auto;align-items:flex-end;">
@@ -865,7 +913,7 @@
             <input type="number" id="hc-guides" value="0" min="0" style="width:80px" oninput="recalcHotelCosts()">
           </div>
           <div style="padding-bottom:2px;font-size:12px;color:var(--text3)">
-            PAX ≈ <span id="hc-pax-approx" style="font-family:'DM Mono',monospace;font-weight:600;color:var(--text)">0</span>
+            PAX ≈ <span id="hc-pax-approx" style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)">0</span>
           </div>
         </div>
       </div>
@@ -882,17 +930,17 @@
             <th style="color:var(--green-bg)">Twins Total ¥</th>
             <th style="color:var(--green-bg)">Singles Total ¥</th>
             <th style="color:var(--green-bg)">Guides Total ¥</th>
-            <th style="background:var(--accent)">Total ¥</th>
+            <th style="background:var(--gleam);color:var(--color-text-primary)">Total ¥</th>
           </tr>
         </thead>
         <tbody id="hotelCostsBody"></tbody>
         <tfoot>
-          <tr style="background:var(--text);color:white;font-weight:700;">
-            <td colspan="7" style="text-align:right;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Grand Total</td>
-            <td id="hc-total-twins" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;">¥0</td>
-            <td id="hc-total-singles" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;">¥0</td>
-            <td id="hc-total-guides" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;">¥0</td>
-            <td id="hc-total-all" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;background:var(--accent);">¥0</td>
+          <tr style="background:var(--text);color:var(--color-text-on-dark);font-weight:700;">
+            <td colspan="7" style="text-align:right;font-family:var(--font-style-inter),sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Grand Total</td>
+            <td id="hc-total-twins" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;">¥0</td>
+            <td id="hc-total-singles" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;">¥0</td>
+            <td id="hc-total-guides" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;">¥0</td>
+            <td id="hc-total-all" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;background:var(--gleam);color:var(--color-text-primary);">¥0</td>
           </tr>
         </tfoot>
       </table>
@@ -904,7 +952,7 @@
     <div style="margin-bottom:32px;">
       <div style="display:flex;align-items:flex-end;gap:24px;margin-bottom:16px;flex-wrap:wrap;">
         <div>
-          <div style="font-family:'DM Serif Display',serif;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="section-num">2</span> Services & Transports Budget</div>
+          <div style="font-family:var(--font-style-roslindale),serif;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="section-num">2</span> Services & Transports Budget</div>
           <div style="font-size:12px;color:var(--text3);margin-top:3px;">Total = (Per Person × PAX × Qty) + (Per Group × Qty) + Guide Total</div>
         </div>
         <div style="margin-left:auto;">
@@ -915,7 +963,7 @@
         </div>
       </div>
 
-      <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;">Services</div>
+      <div style="font-family:var(--font-style-inter),sans-serif;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;">Services</div>
       <table class="totals-table" style="margin-bottom:24px;">
         <thead>
           <tr>
@@ -927,19 +975,19 @@
             <th>Guide ¥</th>
             <th>Qty</th>
             <th>Guide Total ¥</th>
-            <th style="background:var(--accent)">Total ¥</th>
+            <th style="background:var(--gleam);color:var(--color-text-primary)">Total ¥</th>
           </tr>
         </thead>
         <tbody id="sbServicesBody"></tbody>
         <tfoot>
-          <tr style="background:var(--text);color:white;font-weight:700;">
-            <td colspan="8" style="text-align:right;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Services Total</td>
-            <td id="sb-svc-total" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;background:var(--accent);">¥0</td>
+          <tr style="background:var(--text);color:var(--color-text-on-dark);font-weight:700;">
+            <td colspan="8" style="text-align:right;font-family:var(--font-style-inter),sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Services Total</td>
+            <td id="sb-svc-total" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;background:var(--gleam);color:var(--color-text-primary);">¥0</td>
           </tr>
         </tfoot>
       </table>
 
-      <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;">Transports</div>
+      <div style="font-family:var(--font-style-inter),sans-serif;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;">Transports</div>
       <table class="totals-table" style="margin-bottom:24px;">
         <thead>
           <tr>
@@ -951,21 +999,21 @@
             <th>Guide ¥</th>
             <th>Qty</th>
             <th>Guide Total ¥</th>
-            <th style="background:var(--accent)">Total ¥</th>
+            <th style="background:var(--gleam);color:var(--color-text-primary)">Total ¥</th>
           </tr>
         </thead>
         <tbody id="sbTransportsBody"></tbody>
         <tfoot>
-          <tr style="background:var(--text);color:white;font-weight:700;">
-            <td colspan="8" style="text-align:right;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Transports Total</td>
-            <td id="sb-trn-total" style="font-family:'DM Mono',monospace;text-align:right;padding:8px 12px;background:var(--accent);">¥0</td>
+          <tr style="background:var(--text);color:var(--color-text-on-dark);font-weight:700;">
+            <td colspan="8" style="text-align:right;font-family:var(--font-style-inter),sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Transports Total</td>
+            <td id="sb-trn-total" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;background:var(--gleam);color:var(--color-text-primary);">¥0</td>
           </tr>
         </tfoot>
       </table>
 
-      <div style="background:var(--text);color:white;border-radius:var(--radius);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-family:'DM Serif Display',serif;font-size:16px;">Combined Total (Services + Transports)</div>
-        <div id="sb-combined-total" style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;">¥0</div>
+      <div style="background:var(--text);color:var(--color-text-on-dark);border-radius:var(--radius);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:var(--font-style-roslindale),serif;font-size:16px;">Combined Total (Services + Transports)</div>
+        <div id="sb-combined-total" style="font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;">¥0</div>
       </div>
     </div>
 
@@ -973,10 +1021,10 @@
 </div>
 
 <!-- DRAFT MODAL -->
-<div id="draftModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+<div id="draftModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(27,56,72,0.45);align-items:center;justify-content:center;">
   <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow-lg);width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
     <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-family:'DM Serif Display',serif;font-size:17px;">Saved Drafts</div>
+      <div style="font-family:var(--font-style-roslindale),serif;font-size:17px;">Saved Drafts</div>
       <button onclick="closeDraftModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);padding:2px 6px;">✕</button>
     </div>
     <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;gap:8px;">
@@ -995,8 +1043,8 @@
 
 <div class="toast" id="toast"></div>
 
-<div id="loadingOverlay" style="position:fixed;inset:0;background:rgba(245,242,237,0.95);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
-  <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--text)">cocolo<span style="color:var(--accent2)">travel</span></div>
+<div id="loadingOverlay" style="position:fixed;inset:0;background:rgba(247,245,218,0.95);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+  <div style="font-family:var(--font-style-roslindale),serif;font-size:22px;color:var(--text)">cocolo<span style="color:var(--gleam)">travel</span></div>
   <div style="font-size:13px;color:var(--text3)">Loading catalogs…</div>
 </div>
 
@@ -1054,7 +1102,7 @@ async function loadCatalogs() {
     refreshAllCitySelects();
   } catch(e) {
     console.error('Failed to load catalogs:', e);
-    if (loadingEl) loadingEl.innerHTML = '<div style="color:var(--accent);font-size:14px;padding:20px">⚠ Could not load catalog data.<br>' + e.message + '</div>';
+    if (loadingEl) loadingEl.innerHTML = '<div style="color:var(--color-text-primary);font-size:14px;padding:20px">⚠ Could not load catalog data.<br>' + e.message + '</div>';
   }
 }
 
@@ -1111,7 +1159,7 @@ function syncGuideDays() {
         cityTd.style.fontWeight = '';
       } else {
         cityTd.textContent = 'Return';
-        cityTd.style.color = 'var(--accent)';
+        cityTd.style.color = 'var(--color-text-primary)';
         cityTd.style.fontWeight = '600';
       }
     }
@@ -1825,7 +1873,7 @@ function recalc() {
       const netMarginPax = grossMarginPax - netTaxPax;
       const totalNetMargin = netMarginPax * pax;
 
-      const color = grossMarginPct >= 20 ? 'var(--green)' : grossMarginPct >= 0 ? 'var(--yellow)' : 'var(--accent)';
+      const color = grossMarginPct >= 20 ? 'var(--green)' : grossMarginPct >= 0 ? 'var(--yellow)' : 'var(--red)';
 
       cells[11].textContent = '€' + (myPrice / eurRate).toFixed(0);
       cells[12].textContent = partnerPct > 0 ? '¥' + fmt(partnerCommCost) : '—';
@@ -2139,7 +2187,7 @@ async function loadDraftList() {
     const q = $('draftSearch')?.value || '';
     filterDrafts(q);
   } catch(e) {
-    list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--accent);font-size:13px;">Could not connect to drafts server.<br><span style="color:var(--text3)">${e.message}</span></div>`;
+    list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--color-text-primary);font-size:13px;">Could not connect to drafts server.<br><span style="color:var(--text3)">${e.message}</span></div>`;
   }
 }
 
