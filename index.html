@@ -2342,7 +2342,7 @@ function exportProforma() {
     ...services.map(s => ({ day: s.day, city: s.city, name: s.name })),
     ...transports.map(t => ({ day: t.day, city: t.city, name: t.name })),
   ].filter(x => x.name).sort((a, b) => a.day - b.day);
-  const serviceLines = allItems.map((item, i) => `${i + 1}. Day ${item.day} - ${capitalizeWords(item.name)} - ${item.city}`).join('\n');
+  const serviceLines = allItems.map((item, i) => `${i + 1}. Day ${String(item.day).padStart(2, '0')} - ${capitalizeWords(item.name)} - ${item.city}`).join('\n');
 
   // ── Single supplement: (sum of single prices × 2) − sum of twin prices ──
   const totalSingle = hotels.reduce((s, h) => s + h.single, 0);
@@ -2386,6 +2386,8 @@ ${hRows.join('\n')}
 ${serviceLines}
 
 ## Rates
+
+Price per PAX in JPY
 
 TWIN basis. Single room supplement ${suppFmt} JPY
 
