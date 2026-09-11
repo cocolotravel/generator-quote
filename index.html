@@ -1036,7 +1036,7 @@
     </div>
     <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;gap:8px;">
       <input type="text" id="draftNameInput" placeholder="Draft name (e.g. Alps_Spring_2026)" style="flex:1">
-      <button class="btn btn-primary" onclick="saveDraftToServer()">Save current</button>
+      <button class="btn btn-primary" onclick="saveDraftToServer(true)">Save current</button>
     </div>
     <div style="padding:10px 22px;border-bottom:1px solid var(--border);">
       <input type="text" id="draftSearch" placeholder="Search drafts…" style="width:100%" oninput="filterDrafts(this.value)">
@@ -2107,11 +2107,16 @@ function applyDraftState(s) {
   }, 50);
 }
 
-async function saveDraftToServer() {
-  const nameInput = $('draftNameInput');
-  const tourName = $('tourName').value;
-  const raw = nameInput?.value.trim() || tourName.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_') || 'draft';
-  const name = raw || 'draft';
+async function saveDraftToServer(fromModal = false) {
+  const typed = fromModal ? ($('draftNameInput')?.value.trim() || '') : '';
+  const name = typed || slugName($('tourName').value) || 'draft';
+
+  if (name !== currentDraftName && await draftExists(name)) {
+    if (!confirm(`Un draft "${name}" existe déjà. L'écraser ?`)) {
+      setDraftStatus('Sauvegarde annulée');
+      return;
+    }
+  }
 
   setDraftStatus('Saving…');
   try {
@@ -2130,6 +2135,7 @@ async function loadDraftFromServer(name) {
   try {
     const state = await apiRequest('GET', `/drafts/${encodeURIComponent(name)}`);
     applyDraftState(state);
+    currentDraftName = name;
     closeDraftModal();
     showToast('✓ Draft loaded: ' + name);
   } catch(e) {
@@ -2201,8 +2207,7 @@ async function loadDraftList() {
 
 function openDraftModal() {
   $('draftModal').style.display = 'flex';
-  const tourName = $('tourName').value;
-  if (tourName) $('draftNameInput').value = tourName.replace(/[^a-zA-Z0-9\s\-_]/g,'').trim().replace(/\s+/g,'_');
+  $('draftNameInput').value = currentDraftName || slugName($('tourName').value);
   const searchEl = $('draftSearch');
   if (searchEl) searchEl.value = '';
   loadDraftList();
@@ -2226,6 +2231,8 @@ function newQuote() {
   $('partnerMarkup').value = 0;
   $('partnerTaxable').checked = false;
   $('targetMargin').value = 30;
+  currentDraftName = null;
+  $('draftNameInput').value = '';
   manualPrices = {};
 
   $('hotelRows').innerHTML = '';
