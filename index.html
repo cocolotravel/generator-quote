@@ -1116,6 +1116,8 @@ async function loadCatalogs() {
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let manualPrices = {};  // key: pax → manually entered price
+let currentDraftName = null;   // draft chargé / dernier sauvegardé
+const slugName = v => (v || '').replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_');
 
 // ── TAB SWITCHING ──────────────────────────────────────────────────────────
 // ── CITY LOOKUP FROM HOTELS ────────────────────────────────────────────────
@@ -2105,6 +2107,16 @@ function applyDraftState(s) {
     });
     recalc();
   }, 50);
+}
+
+async function draftExists(name) {
+  try {
+    const { drafts } = await apiRequest('GET', '/drafts');
+    allDrafts = drafts;
+    return drafts.some(d => d.key === name);
+  } catch (e) {
+    return false;   // panne réseau : on ne bloque pas la sauvegarde
+  }
 }
 
 async function saveDraftToServer(fromModal = false) {
