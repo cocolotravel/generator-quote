@@ -1087,10 +1087,9 @@ function parseCSV(text) {
 async function loadCatalogs() {
   const loadingEl = document.getElementById('loadingOverlay');
   try {
-    const xanoHeaders = { 'x-api-key': DRAFTS_KEY };
     const [svcRes, trnRes, citRes] = await Promise.all([
-      fetch(DRAFTS_API + '/xano/services',   { headers: xanoHeaders }),
-      fetch(DRAFTS_API + '/xano/transports', { headers: xanoHeaders }),
+      fetch(DRAFTS_API + '/xano/services'),
+      fetch(DRAFTS_API + '/xano/transports'),
       fetch('cities_data.csv'),
     ]);
 
@@ -2034,13 +2033,14 @@ function recalcHotelCosts() {
 }
 
 // ── DRAFT SERVER API ───────────────────────────────────────────────────────
-const DRAFTS_API = 'https://drafts.cocolotravel.com';
-const DRAFTS_KEY = '4c9aac2c8fb729428030741580913a4b';
+// Requests go through the /api/* Netlify Function proxy (see netlify/functions/drafts.js)
+// so the real drafts.cocolotravel.com API key stays server-side, never shipped to the browser.
+const DRAFTS_API = '/api';
 
 async function apiRequest(method, path, body) {
   const opts = {
     method,
-    headers: { 'Content-Type': 'application/json', 'x-api-key': DRAFTS_KEY },
+    headers: { 'Content-Type': 'application/json' },
   };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(DRAFTS_API + path, opts);

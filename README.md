@@ -182,11 +182,13 @@ quote.cocolotravel.com            drafts.cocolotravel.com
 
 All endpoints except `/health` require `x-api-key` header.
 
+As of October 2026, the quote tool no longer calls this API directly from the browser — it goes through a `netlify/functions/drafts.js` proxy on the Netlify site, which keeps the key server-side (set as the `DRAFTS_API_KEY` Netlify environment variable). See [generator-namelist](https://github.com/cocolotravel/generator-namelist) for the same pattern, applied first there after its repo went public.
+
 ### Environment Variables (`.env` file)
 
 | Variable | Description |
 | --- | --- |
-| `API_KEY` | Shared secret — must match `DRAFTS_KEY` in the HTML tool |
+| `API_KEY` | Shared secret — must match the `DRAFTS_API_KEY` Netlify environment variable (previously embedded directly as `DRAFTS_KEY` in the HTML tool; no longer is) |
 | `LINODE_ACCESS_KEY` | Object Storage access key |
 | `LINODE_SECRET_KEY` | Object Storage secret key |
 | `BUCKET_NAME` | `drafts` |
