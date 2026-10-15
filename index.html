@@ -2580,7 +2580,7 @@ function exportProformaPDF() {
   container.className = 'pdf-proforma';
   container.innerHTML = marked.parse(built.md);
   container.style.cssText = `
-    position: absolute; left: 0; top: 0; width: 700px; z-index: -1000;
+    position: absolute; left: 0; top: -100000px; width: 700px;
     font-family: var(--font-style-inter), sans-serif; font-size: 13px; line-height: 1.5;
     color: var(--color-text-primary); background: var(--color-background-primary); padding: 32px;
   `;
