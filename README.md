@@ -11,8 +11,9 @@ Web-based tour pricing calculator for Cocolo Travel staff. Built as a single HTM
 | --- | --- |
 | `index.html` | Main application (UI + logic) |
 | `cities_data.csv` | List of available destination cities (93 cities) |
+| `proforma-template.md` | Markdown template for the pro-forma export, with `{{PLACEHOLDER}}` tokens filled in at export time |
 
-Services and transport catalogs are loaded at runtime from the Xano API via the Drafts API proxy (see below). Only `cities_data.csv` needs to be in the Linode bucket alongside `index.html`.
+Services and transport catalogs are loaded at runtime from the Xano API via the Drafts API proxy (see below). `cities_data.csv` and `proforma-template.md` both need to be in the Linode bucket alongside `index.html`.
 
 ## Usage
 
@@ -38,8 +39,8 @@ Open `index.html` in a browser. The tool fetches all catalog data on load — no
 
 ### Architecture
 
-- Single HTML file + `cities_data.csv` in Linode Object Storage
-- Cities loaded via `fetch()` from the bucket
+- Single HTML file + `cities_data.csv` + `proforma-template.md` in Linode Object Storage
+- Cities and pro-forma template loaded via `fetch()` from the bucket
 - Services and transports loaded via the Drafts API Xano proxy (authenticated, credentials never reach the browser)
 - Draft persistence via Drafts API
 - Excel and Markdown pro-forma export built-in
@@ -135,7 +136,7 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 ### Exports
 
 - **Excel** — 6 sheets: Dashboard · Hotels · Services · Transports · Guide Days · Totals
-- **Pro-forma** — Markdown file with itinerary, hotels, services, pricing table. Filename = `[Tour Name] - pro-forma.md`
+- **Pro-forma** — Markdown file with itinerary, hotels, services, pricing table. Filename = `[Tour Name] - pro-forma.md`. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`
 
 ### Drafts
 
@@ -144,7 +145,8 @@ Saved to/loaded from the Drafts API, not localStorage. The **📁 Drafts** butto
 ### Known Gotchas
 
 - `loadCatalogs()` must be the last call in the script — removing it breaks the loading screen
-- `cities_data.csv` must be in the same Linode bucket directory as `index.html`
+- `cities_data.csv` and `proforma-template.md` must both be in the same Linode bucket directory as `index.html`
+- The pro-forma template's `{{PLACEHOLDER}}` tokens (`{{ITINERARY_ROWS}}`, `{{HOTEL_ROWS}}`, `{{SERVICE_LINES}}`, `{{SINGLE_SUPPLEMENT}}`, `{{PAX_ROWS}}`, `{{EXTRA_NIGHT_ROWS}}`) must match exactly between `proforma-template.md` and `exportProforma()` in `index.html`
 - Autocomplete dropdowns use `position: fixed` anchored to viewport coordinates (not `absolute`) to avoid clipping inside `overflow: hidden` table containers
 
 ---

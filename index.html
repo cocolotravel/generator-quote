@@ -1061,6 +1061,7 @@
 let SERVICES_DATA = [];
 let TRANSPORTS_DATA = [];
 let CITIES = [];
+let PROFORMA_TEMPLATE = '';
 const ROOMTYPES = ["Double","Twin","Single","Japanese (和)","Japanese w/ Bath (和・貸切温泉)","Japanese w/ Toilet/Shower (和・トイレ・シャワー)","Japanese w/ Toilet (和・トイレ)","Triple","Triple (twin + extra bed)","Apartment","House","Machiya","Quadruple"];
 const MEALS = ["B","B L","B D","B L D","None"];
 
@@ -1087,17 +1088,20 @@ function parseCSV(text) {
 async function loadCatalogs() {
   const loadingEl = document.getElementById('loadingOverlay');
   try {
-    const [svcRes, trnRes, citRes] = await Promise.all([
+    const [svcRes, trnRes, citRes, tplRes] = await Promise.all([
       fetch(DRAFTS_API + '/xano/services'),
       fetch(DRAFTS_API + '/xano/transports'),
       fetch('cities_data.csv'),
+      fetch('proforma-template.md'),
     ]);
 
     if (!svcRes.ok) throw new Error('Failed to load services from proxy: ' + svcRes.statusText);
     if (!trnRes.ok) throw new Error('Failed to load transports from proxy: ' + trnRes.statusText);
+    if (!tplRes.ok) throw new Error('Failed to load pro-forma template: ' + tplRes.statusText);
 
     SERVICES_DATA   = await svcRes.json();
     TRANSPORTS_DATA = await trnRes.json();
+    PROFORMA_TEMPLATE = await tplRes.text();
 
     const citText = await citRes.text();
     const citRows = parseCSV(citText);
@@ -2440,55 +2444,18 @@ function exportProforma() {
     `| ${g.city} | ${Math.round(g.twin * 1.2).toLocaleString('ja-JP')} JPY | ${g.meal} |`
   );
 
-  // ── Assemble markdown ──
-  const md =
-`[See general terms and conditions of sale.](https://cloud.cocolotravel.com/s/CbSiZSDaLoxszmq)
-
-## Itinerary
-
-| Day | Overnight | Meals |
-|------|--------|-------|
-${iRows.join('\n')}
-
-## Hotels
-
-| City | Hotel | Nights | Meals |
-|-------|-------|-------|-------|
-${hRows.join('\n')}
-
-## Included Services
-
-${serviceLines}
-
-## Rates
-
-Price per PAX in JPY
-
-TWIN basis. Single room supplement ${suppFmt} JPY
-
-| PAX Base | Price |
-|----------|------|
-${paxRows.join('\n')}
-
-### Airport Transfers
-
-Price per taxi for a maximum of 4 people with 1 bag per person, in both directions (airport - hotel and hotel - airport)
-
-| Route | Price |
-|--------|------|
-| Haneda - Tokyo | 11,700 JPY |
-| Narita - Tokyo | 19,500 JPY |
-| Kansai - Osaka | 19,500 JPY |
-| Kansai - Kyoto | 28,600 JPY |
-
-### Additional Night
-
-Price per night, per room, based on a TWIN room (2 people).
-
-| City | Price | Meals |
-|-------|------|-------|
-${extraRows.join('\n')}
-`;
+  // ── Fill template (loaded from proforma-template.md) ──
+  if (!PROFORMA_TEMPLATE) {
+    showToast('✗ Pro-forma template not loaded — reload the page and try again');
+    return;
+  }
+  const md = PROFORMA_TEMPLATE
+    .replace('{{ITINERARY_ROWS}}', iRows.join('\n'))
+    .replace('{{HOTEL_ROWS}}', hRows.join('\n'))
+    .replace('{{SERVICE_LINES}}', serviceLines)
+    .replace('{{SINGLE_SUPPLEMENT}}', suppFmt)
+    .replace('{{PAX_ROWS}}', paxRows.join('\n'))
+    .replace('{{EXTRA_NIGHT_ROWS}}', extraRows.join('\n'));
 
   // ── Download ──
   const filename = tourName.replace(/[^a-zA-Z0-9\-_\s]/g, '').trim() + ' - pro-forma.md';
