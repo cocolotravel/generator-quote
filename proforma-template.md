@@ -77,39 +77,39 @@ Price per night, per room, based on a TWIN room (2 people).
 
 ---
 
-## 1. Arranged Tour Contract
+## Arranged Tour Contract (Article 1)
 
 This travel is arranged by Cocolo Travel Llc. (hereinafter referred as Cocolo) and the Client shall enter into an "Arranged Tour Contract" with Cocolo. Cocolo, commissioned by the Client, undertakes to make arrangements for transportation, accommodation and other services for travel (together, the "Travel Services"), as set out in the "Arrangements" section of this document, by acting as a representative, as an intermediary, as an agent.
 
-## 2. Application for a Contract
+## Application for a Contract (Article 2)
 
 Once the Arranged Tour Application Form has been completed in full, payment of the application fee must be made by the Person Liable/Responsible for the Contract. The total application fee amount is indicated on the travel estimate sheet. The Client must provide information as required by Cocolo by submitting the application form or by sending such information by telephone, e-mail, facsimile and other means of communication. At the timing of application, Cocolo requires payment of an application fee, the amount of which shall be specified by Cocolo. The application fee will be treated as part of the Travel Fee, the cancellation fee or other money which the Client should pay to Cocolo.
 
-## 3. Time of Entry into Effect of a Contract
+## Time of Entry into Effect of a Contract (Article 3)
 
 An Arranged Tour Contract enters into effect when Cocolo has been agreed to conclude it and has received the application fee.
 
-## 4. Travel Fee
+## Travel Fee (Article 4)
 
 The Client must pay to Cocolo the Travel Fee including prices which Cocolo pays to transportation/accommodation suppliers etc., such as a train fare, accommodation charges, etc., and travel handling fees.
 
-## 5. Handling Charges/Fees
+## Handling Charges/Fees (Article 5)
 
 Handling charges/fees will be included in the tariffs mentioned on the travel estimate sheet.
 
-## 6. Payment Procedures and Time Period for Travel Fees
+## Payment Procedures and Time Period for Travel Fees (Article 6)
 
 The whole amount of the Travel Fee must be paid no later than 31 days prior to the first day of travel.
 
-## 7. A Change of Travel Fees
+## A Change of Travel Fees (Article 7)
 
 If fluctuation in the Travel Fees has occurred prior to the commencement of the travel due to a revision of a fare/charge of the transportation/accommodation facilities, etc., due to the exchange rate or any other cause, Cocolo reserves the right to revise the Travel Fee accordingly.
 
-## 8. Change in Contract Contents
+## Change in Contract Contents (Article 8)
 
 When the Client requests Cocolo to change the contents of Travel Services of the Arranged Tour Contract, Cocolo will try to meet the Client's request to the reasonably practicable extent. In this case, the Client shall bear a cancellation fee or an amendment fee or any other penalty to be paid to the third party including transportation/accommodation facilities, as well as handling charge as specified by Cocolo. Handling charges for amending reservations: 1,050 yen per change (transportation, accommodation and other facilities) in addition to the charges or penalties which suppliers charge to Cocolo.
 
-## 9. Cancellation
+## Cancellation (Article 9)
 
 ### A. Voluntary Cancellation by the Client
 
@@ -141,7 +141,7 @@ The Client may cancel the Arranged Tour Contract if it has become impossible to 
 
 \* Date of cancellation refers to the date and time when cancellation notice is received by us based on Japan time. Requests for changes and cancellations will be accepted only during business hours (9:00–17:00).
 
-## 10. Cocolo's Responsibility and Exemptions
+## Cocolo's Responsibility and Exemptions (Article 10)
 
 A. When Cocolo has made arrangements with good faith to fulfill the customer's requests for arrangement, Cocolo's obligations under an Arranged Tour Contract shall be deemed as being fulfilled. Thus, failing to make a booking due to lack of vacancies or to meet the customer's requests, etc. does not constitute any liability of Cocolo as long as Cocolo performed its obligations in a proper manner.
 
@@ -153,25 +153,25 @@ D. Cocolo shall compensate for damage to baggage if the damage is caused by Coco
 
 E. Cocolo shall not be liable for Client's damages due to such reasons as natural disaster, war, disturbances, accident, fire, acts of government, and alteration or cancellation of tour itinerary due to such causes, accidents occurring during clients' free activities, food poisoning, theft, delays, and any cause beyond the control of Cocolo and/or agents in charge of tour arrangements.
 
-## 11. Responsibility of the Client
+## Responsibility of the Client (Article 11)
 
 If Cocolo incurs any damage caused by a Client intentionally or by negligence, the Client must compensate for the damage.
 
-## 12. Travel Advisories and Warnings
+## Travel Advisories and Warnings (Article 12)
 
 A. It is the responsibility of the Client to ensure that its End Customers make necessary preparations including, but not limited to, passport, Visa and other requirements.
 
 B. The Client is strongly recommended to ensure its End Customers hold appropriate travel insurance.
 
-## 13. Privacy Policy
+## Privacy Policy (Article 13)
 
 We collect personal information only in compliance with relevant regulations and guidelines. We use personal information collected from customers as reasonably required to contact customers as well as to provide travel related services such as reservations of transportation and accommodations.
 
-## 14. Compliance of the Terms and Conditions of Travel Contracts
+## Compliance of the Terms and Conditions of Travel Contracts (Article 14)
 
 Any items not indicated on this Terms and Conditions document will be stipulated in the Company's Terms and Conditions of Travel Contracts.
 
-## 15. Electronic Signatures
+## Electronic Signatures (Article 15)
 
 Cocolo and the Client agree that the Arranged Tour Contract and any amendments thereto may be executed and delivered by electronic means, including through electronic signature platforms such as LibreSign, and that any electronic signature so affixed shall have the same legal validity, force, and effect as a handwritten signature, and shall be admissible as evidence of each party's assent to the terms herein to the same extent as an original signature. Neither Cocolo nor the Client shall challenge the validity or enforceability of the Arranged Tour Contract solely on the ground that it was signed or transmitted electronically.
 
