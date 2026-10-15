@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD025 -->
+
+# Arrangements
+
 Prices are given in JPY.
 
 ## Itinerary
