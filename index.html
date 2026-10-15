@@ -6,6 +6,8 @@
 <title>Cocolo Travel — Quote Generator</title>
 <link rel="icon" type="image/svg+xml" href="https://assets.cocolotravel.com/logos/svg/logo_cloud_logo_full_sumi.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -657,7 +659,8 @@
     <button class="btn btn-secondary btn-sm" onclick="newQuote()">＋ New</button>
     <button class="btn btn-secondary btn-sm" onclick="openDraftModal()">📁 Drafts</button>
     <button class="btn btn-secondary btn-sm" onclick="saveDraftToServer()">💾 Save Draft</button>
-    <button class="btn btn-blue btn-sm" onclick="exportProforma()">⬇ Pro-forma</button>
+    <button class="btn btn-blue btn-sm" onclick="exportProforma()">⬇ Pro-forma (MD)</button>
+    <button class="btn btn-blue btn-sm" onclick="exportProformaPDF()">⬇ Pro-forma (PDF)</button>
     <button class="btn btn-green btn-sm" onclick="exportExcel()">⬇ Export Excel</button>
   </div>
 </header>
@@ -2458,7 +2461,7 @@ function exportExcel() {
 }
 
 // ── PRO-FORMA EXPORT ───────────────────────────────────────────────────────
-function exportProforma() {
+function buildProformaMarkdown() {
   const hotels    = getHotelRows();
   const services  = getServiceRows();
   const transports = getTransportRows();
@@ -2513,10 +2516,8 @@ function exportProforma() {
   );
 
   // ── Fill template (loaded from proforma-template.md) ──
-  if (!PROFORMA_TEMPLATE) {
-    showToast('✗ Pro-forma template not loaded — reload the page and try again');
-    return;
-  }
+  if (!PROFORMA_TEMPLATE) return null;
+
   const md = PROFORMA_TEMPLATE
     .replace('{{ITINERARY_ROWS}}', iRows.join('\n'))
     .replace('{{HOTEL_ROWS}}', hRows.join('\n'))
@@ -2526,9 +2527,18 @@ function exportProforma() {
     .replace('{{PAX_ROWS}}', paxRows.join('\n'))
     .replace('{{EXTRA_NIGHT_ROWS}}', extraRows.join('\n'));
 
-  // ── Download ──
-  const filename = tourName.replace(/[^a-zA-Z0-9\-_\s]/g, '').trim() + ' - pro-forma.md';
-  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  const baseFilename = tourName.replace(/[^a-zA-Z0-9\-_\s]/g, '').trim();
+  return { md, baseFilename };
+}
+
+function exportProforma() {
+  const built = buildProformaMarkdown();
+  if (!built) {
+    showToast('✗ Pro-forma template not loaded — reload the page and try again');
+    return;
+  }
+  const filename = built.baseFilename + ' - pro-forma.md';
+  const blob = new Blob([built.md], { type: 'text/markdown;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
@@ -2536,6 +2546,65 @@ function exportProforma() {
   a.click();
   URL.revokeObjectURL(url);
   showToast('✓ Pro-forma exported: ' + filename);
+}
+
+function exportProformaPDF() {
+  const built = buildProformaMarkdown();
+  if (!built) {
+    showToast('✗ Pro-forma template not loaded — reload the page and try again');
+    return;
+  }
+  if (typeof marked === 'undefined' || typeof html2pdf === 'undefined') {
+    showToast('✗ PDF libraries failed to load — check your connection and try again');
+    return;
+  }
+  const filename = built.baseFilename + ' - pro-forma.pdf';
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .pdf-proforma h1, .pdf-proforma h2, .pdf-proforma h3 { font-family: var(--font-style-roslindale), serif; color: var(--color-text-primary); margin: 20px 0 10px; }
+    .pdf-proforma h1 { font-size: 24px; }
+    .pdf-proforma h2 { font-size: 19px; border-bottom: 1px solid var(--color-brand-kodama); padding-bottom: 4px; }
+    .pdf-proforma h3 { font-size: 15px; }
+    .pdf-proforma p, .pdf-proforma li { margin: 6px 0; }
+    .pdf-proforma table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+    .pdf-proforma th, .pdf-proforma td { border: 1px solid var(--color-brand-kodama); padding: 5px 8px; text-align: left; }
+    .pdf-proforma th { background: var(--color-background-secondary); }
+    .pdf-proforma blockquote { border-left: 3px solid var(--color-brand-kin); padding-left: 12px; color: var(--color-sumi-60); margin: 10px 0; }
+    .pdf-proforma hr { border: none; border-top: 1px solid var(--color-brand-kodama); margin: 20px 0; }
+    .pdf-proforma tr, .pdf-proforma blockquote, .pdf-proforma li { page-break-inside: avoid; }
+    .pdf-proforma h1, .pdf-proforma h2, .pdf-proforma h3 { page-break-after: avoid; }
+  `;
+
+  const container = document.createElement('div');
+  container.className = 'pdf-proforma';
+  container.innerHTML = marked.parse(built.md);
+  container.style.cssText = `
+    position: fixed; left: -9999px; top: 0; width: 700px;
+    font-family: var(--font-style-inter), sans-serif; font-size: 13px; line-height: 1.5;
+    color: var(--color-text-primary); background: var(--color-background-primary); padding: 32px;
+  `;
+
+  document.body.appendChild(style);
+  document.body.appendChild(container);
+
+  html2pdf().set({
+    margin: 12,
+    filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] },
+  }).from(container).save().then(() => {
+    container.remove();
+    style.remove();
+    showToast('✓ PDF exported: ' + filename);
+  }).catch(e => {
+    container.remove();
+    style.remove();
+    console.error('PDF export failed:', e);
+    showToast('✗ PDF export failed: ' + e.message);
+  });
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────

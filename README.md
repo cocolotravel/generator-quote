@@ -24,7 +24,7 @@ Open `index.html` in a browser. The tool fetches all catalog data on load — no
 - **Builder tab** — tour setup (name, ref, season, guides, nights, tax rate, exchange rate, markups) plus drag-to-reorder Hotels, Services, Transports, and Guide Days sections
 - **Pricing Summary tab** — full 1–30 PAX pricing table with cost/suggested/your price, EUR conversion, partner commission, gross/net margin, color-coded margins
 - **Budgets tab** — Hotels budget (room counts, per-hotel cost breakdown), Services & Transports budget (single PAX input, per-line and combined totals), Guide Days budget (auto-populated, per-day and grand total), plus an overall Grand Total Budget combining all three
-- **Exports** — Excel workbook (6 sheets) and Markdown pro-forma
+- **Exports** — Excel workbook (6 sheets), and the pro-forma as Markdown or PDF
 - **Drafts** — save/load/search quote drafts via the Drafts API (not localStorage)
 - **Catalog data** — cities from `cities_data.csv`, services/transports from Xano, proxied server-side so credentials never reach the browser
 
@@ -43,7 +43,7 @@ Open `index.html` in a browser. The tool fetches all catalog data on load — no
 - Cities and pro-forma template loaded via `fetch()` from the bucket
 - Services and transports loaded via the Drafts API Xano proxy (authenticated, credentials never reach the browser)
 - Draft persistence via Drafts API
-- Excel and Markdown pro-forma export built-in
+- Excel export and Markdown/PDF pro-forma export built-in
 - Deployed to Linode Object Storage with CNAME `quote.cocolotravel.com`
 
 ### Tabs
@@ -147,7 +147,7 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 ### Exports
 
 - **Excel** — 6 sheets: Dashboard · Hotels · Services · Transports · Guide Days · Totals
-- **Pro-forma** — Markdown file with itinerary, hotels, services, transports, pricing table. Filename = `[Tour Name] - pro-forma.md`. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`
+- **Pro-forma** — available as Markdown (`[Tour Name] - pro-forma.md`) or PDF (`[Tour Name] - pro-forma.pdf`), both built from the same itinerary/hotels/services/transports/pricing content. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`. The PDF is rendered client-side (`marked` to convert the filled-in Markdown to HTML, `html2pdf.js` to render and download it) — no server involved
 
 ### Drafts
 
