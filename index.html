@@ -2576,19 +2576,28 @@ function exportProformaPDF() {
     .pdf-proforma h1, .pdf-proforma h2, .pdf-proforma h3 { page-break-after: avoid; }
   `;
 
+  // Rendered as a genuinely visible full-screen overlay (not hidden off-screen) —
+  // html2canvas needs the element actually painted by the browser to capture it reliably.
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 99999; overflow: auto;
+    background: var(--color-background-primary);
+  `;
+
   const container = document.createElement('div');
   container.className = 'pdf-proforma';
   container.innerHTML = marked.parse(built.md);
   container.style.cssText = `
-    position: absolute; left: 0; top: -100000px; width: 700px;
+    width: 700px; max-width: 100%; margin: 0 auto;
     font-family: var(--font-style-inter), sans-serif; font-size: 13px; line-height: 1.5;
     color: var(--color-text-primary); background: var(--color-background-primary); padding: 32px;
   `;
+  overlay.appendChild(container);
 
   document.body.appendChild(style);
-  document.body.appendChild(container);
+  document.body.appendChild(overlay);
 
-  const cleanup = () => { container.remove(); style.remove(); };
+  const cleanup = () => { overlay.remove(); style.remove(); };
 
   const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
 
