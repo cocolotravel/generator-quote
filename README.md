@@ -23,7 +23,7 @@ Open `index.html` in a browser. The tool fetches all catalog data on load — no
 
 - **Builder tab** — tour setup (name, ref, season, guides, nights, tax rate, exchange rate, markups) plus drag-to-reorder Hotels, Services, Transports, and Guide Days sections
 - **Pricing Summary tab** — full 1–30 PAX pricing table with cost/suggested/your price, EUR conversion, partner commission, gross/net margin, color-coded margins
-- **Budgets tab** — Hotels budget (room counts, per-hotel cost breakdown) and Services & Transports budget (single PAX input, per-line and combined totals)
+- **Budgets tab** — Hotels budget (room counts, per-hotel cost breakdown), Services & Transports budget (single PAX input, per-line and combined totals), and Guide Days budget (auto-populated, per-day and grand total)
 - **Exports** — Excel workbook (6 sheets) and Markdown pro-forma
 - **Drafts** — save/load/search quote drafts via the Drafts API (not localStorage)
 - **Catalog data** — cities from `cities_data.csv`, services/transports from Xano, proxied server-side so credentials never reach the browser
@@ -132,6 +132,12 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 - Single PAX input drives both tables
 - Total per line = `(Per Person × PAX × Qty) + (Per Group × Qty) + (Guide ¥ × Qty × numGuides)`
 - Subtotals per section + combined total
+
+##### Guide Days Budget
+
+- Auto-populated from the Builder's Guide Days section, no manual input
+- Total/day = `(Rate + Allowance + Extras) × # Guides`
+- Grand total across all guide days
 
 ### Exports
 

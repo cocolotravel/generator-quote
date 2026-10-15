@@ -1024,6 +1024,37 @@
       </div>
     </div>
 
+    <hr style="border:none;border-top:2px solid var(--border);margin-bottom:36px;">
+
+    <!-- GUIDE DAYS BUDGET -->
+    <div style="margin-bottom:32px;">
+      <div style="margin-bottom:16px;">
+        <div style="font-family:var(--font-style-roslindale),serif;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="section-num">3</span> Guide Days Budget</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px;">Auto-populated from Guide Days section · Total/day = (Rate + Allowance + Extras) × # Guides</div>
+      </div>
+      <table class="totals-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Day</th>
+            <th style="text-align:left;min-width:100px">City</th>
+            <th># Guides</th>
+            <th>Rate ¥</th>
+            <th>Allowance ¥</th>
+            <th>Extras ¥</th>
+            <th style="text-align:left;min-width:160px">Notes</th>
+            <th style="background:var(--gleam);color:var(--color-text-primary)">Total ¥</th>
+          </tr>
+        </thead>
+        <tbody id="gbBody"></tbody>
+        <tfoot>
+          <tr style="background:var(--text);color:var(--color-text-on-dark);font-weight:700;">
+            <td colspan="7" style="text-align:right;font-family:var(--font-style-inter),sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Guide Days Total</td>
+            <td id="gb-total" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;background:var(--gleam);color:var(--color-text-primary);">¥0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
   </div>
 </div>
 
@@ -1910,6 +1941,7 @@ function recalc() {
   } catch(e) { console.error('recalc error:', e); }
   recalcHotelCosts();
   recalcSvcBudget();
+  recalcGuideBudget();
 }
 
 // ── SERVICES & TRANSPORTS BUDGET TAB ──────────────────────────────────────
@@ -1958,6 +1990,35 @@ function recalcSvcBudget() {
 
   const combinedEl = document.getElementById('sb-combined-total');
   if (combinedEl) combinedEl.textContent = '¥' + fmt(svcTotal + trnTotal);
+}
+
+// ── GUIDE DAYS BUDGET ──────────────────────────────────────────────────────
+function recalcGuideBudget() {
+  const tbody = document.getElementById('gbBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  let grandTotal = 0;
+  getGuideRows().forEach(r => {
+    const total = (r.rate + r.allowance + r.extras) * r.num;
+    grandTotal += total;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left;font-weight:600">${r.day}</td>
+      <td style="text-align:left;color:var(--text2)">${r.city || '—'}</td>
+      <td>${r.num}</td>
+      <td>¥${fmt(r.rate)}</td>
+      <td>¥${fmt(r.allowance)}</td>
+      <td>¥${fmt(r.extras)}</td>
+      <td style="text-align:left;color:var(--text2)">${r.notes || '—'}</td>
+      <td style="font-weight:700">¥${fmt(total)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const totalEl = document.getElementById('gb-total');
+  if (totalEl) totalEl.textContent = '¥' + fmt(grandTotal);
 }
 
 // ── HOTEL COSTS TAB ────────────────────────────────────────────────────────
