@@ -120,6 +120,11 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 
 #### 3. Budgets
 
+##### Grand Total Budget
+
+- Banner at the top of the tab — sum of the Hotels, Services & Transports, and Guide Days budget totals
+- Updates live as any of the three sections change
+
 ##### Hotels Budget
 
 - Staff enters Twin Rooms, Single Rooms, Guide Rooms manually
@@ -131,18 +136,13 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 
 - Single PAX input drives both tables
 - Total per line = `(Per Person × PAX × Qty) + (Per Group × Qty) + (Guide ¥ × Qty × numGuides)`
-- Subtotals per section (combined total now part of the Grand Total Budget below)
+- Subtotals per section (combined total now part of the Grand Total Budget above)
 
 ##### Guide Days Budget
 
 - Auto-populated from the Builder's Guide Days section, no manual input
 - Total/day = `(Rate + Allowance + Extras) × # Guides`
 - Grand total across all guide days
-
-##### Grand Total Budget
-
-- Sum of the Hotels, Services & Transports, and Guide Days budget totals
-- Updates live as any of the three sections change
 
 ### Exports
 
