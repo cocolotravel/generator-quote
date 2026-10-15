@@ -1017,11 +1017,6 @@
           </tr>
         </tfoot>
       </table>
-
-      <div style="background:var(--text);color:var(--color-text-on-dark);border-radius:var(--radius);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-family:var(--font-style-roslindale),serif;font-size:16px;">Combined Total (Services + Transports)</div>
-        <div id="sb-combined-total" style="font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;">¥0</div>
-      </div>
     </div>
 
     <hr style="border:none;border-top:2px solid var(--border);margin-bottom:36px;">
@@ -1053,6 +1048,11 @@
           </tr>
         </tfoot>
       </table>
+    </div>
+
+    <div style="background:var(--gleam);color:var(--color-text-primary);border-radius:var(--radius);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:var(--font-style-roslindale),serif;font-size:18px;">Grand Total Budget (Hotels + Services & Transports + Guide Days)</div>
+      <div id="budget-grand-total" style="font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;">¥0</div>
     </div>
 
   </div>
@@ -1939,15 +1939,17 @@ function recalc() {
     }
   }
   } catch(e) { console.error('recalc error:', e); }
-  recalcHotelCosts();
-  recalcSvcBudget();
-  recalcGuideBudget();
+  const hotelsBudgetTotal = recalcHotelCosts();
+  const svcTrnBudgetTotal = recalcSvcBudget();
+  const guidesBudgetTotal = recalcGuideBudget();
+  const grandTotalEl = document.getElementById('budget-grand-total');
+  if (grandTotalEl) grandTotalEl.textContent = '¥' + fmt(hotelsBudgetTotal + svcTrnBudgetTotal + guidesBudgetTotal);
 }
 
 // ── SERVICES & TRANSPORTS BUDGET TAB ──────────────────────────────────────
 function recalcSvcBudget() {
   const paxEl = document.getElementById('sb-pax');
-  if (!paxEl) return;
+  if (!paxEl) return 0;
   const pax = parseFloat(paxEl.value) || 0;
   const numGuides = getVal('numGuides');
 
@@ -1988,14 +1990,13 @@ function recalcSvcBudget() {
   const svcTotal = buildTable(getServiceRows(), 'sbServicesBody', 'sb-svc-total');
   const trnTotal = buildTable(getTransportRows(), 'sbTransportsBody', 'sb-trn-total');
 
-  const combinedEl = document.getElementById('sb-combined-total');
-  if (combinedEl) combinedEl.textContent = '¥' + fmt(svcTotal + trnTotal);
+  return svcTotal + trnTotal;
 }
 
 // ── GUIDE DAYS BUDGET ──────────────────────────────────────────────────────
 function recalcGuideBudget() {
   const tbody = document.getElementById('gbBody');
-  if (!tbody) return;
+  if (!tbody) return 0;
   tbody.innerHTML = '';
 
   let grandTotal = 0;
@@ -2019,6 +2020,7 @@ function recalcGuideBudget() {
 
   const totalEl = document.getElementById('gb-total');
   if (totalEl) totalEl.textContent = '¥' + fmt(grandTotal);
+  return grandTotal;
 }
 
 // ── HOTEL COSTS TAB ────────────────────────────────────────────────────────
@@ -2057,7 +2059,7 @@ function recalcHotelCosts() {
   if (paxEl) paxEl.textContent = paxApprox;
 
   const tbody = document.getElementById('hotelCostsBody');
-  if (!tbody) return;
+  if (!tbody) return 0;
   tbody.innerHTML = '';
 
   const groups = getConsecutiveHotelGroups();
@@ -2095,6 +2097,7 @@ function recalcHotelCosts() {
   if (el('hc-total-singles')) el('hc-total-singles').textContent = '¥' + fmt(grandSingles);
   if (el('hc-total-guides')) el('hc-total-guides').textContent = '¥' + fmt(grandGuides);
   if (el('hc-total-all')) el('hc-total-all').textContent = '¥' + fmt(grandTotal);
+  return grandTotal;
 }
 
 // ── DRAFT SERVER API ───────────────────────────────────────────────────────
