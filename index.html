@@ -1216,10 +1216,16 @@ function syncGuideDays() {
 // ── SYNC CITIES IN SERVICES & TRANSPORTS FROM HOTEL NIGHTS ────────────────
 function syncCitiesFromHotels() {
   const nightCityMap = {};
-  Array.from(document.querySelectorAll('#hotelRows tr')).forEach((tr, i) => {
+  const hotelRows = Array.from(document.querySelectorAll('#hotelRows tr'));
+  hotelRows.forEach((tr, i) => {
     const citySelect = tr.querySelectorAll('select')[0];
     nightCityMap[i + 1] = citySelect?.value || '';
   });
+  // Day after the last hotel night (e.g. a departure-day airport transfer) stays in the last night's city
+  if (hotelRows.length) {
+    const lastCitySelect = hotelRows[hotelRows.length - 1].querySelectorAll('select')[0];
+    nightCityMap[hotelRows.length + 1] = lastCitySelect?.value || '';
+  }
 
   ['#serviceRows', '#transportRows'].forEach(selector => {
     Array.from(document.querySelectorAll(selector + ' tr')).forEach(tr => {
@@ -1543,10 +1549,16 @@ function addServiceRow(data={}) {
 
   function updateCityFromDay() {
     const nightCityMap = {};
-    Array.from(document.querySelectorAll('#hotelRows tr')).forEach((tr, i) => {
+    const hotelRows = Array.from(document.querySelectorAll('#hotelRows tr'));
+    hotelRows.forEach((tr, i) => {
       const cs = tr.querySelectorAll('select')[0];
       nightCityMap[i + 1] = cs?.value || '';
     });
+    // Day after the last hotel night (e.g. a departure-day airport transfer) stays in the last night's city
+    if (hotelRows.length) {
+      const lastCitySelect = hotelRows[hotelRows.length - 1].querySelectorAll('select')[0];
+      nightCityMap[hotelRows.length + 1] = lastCitySelect?.value || '';
+    }
     cityTd.textContent = nightCityMap[parseInt(dayInput.value)] || '';
   }
   dayInput.addEventListener('change', () => { updateCityFromDay(); recalc(); });
@@ -1618,10 +1630,16 @@ function addTransportRow(data={}) {
 
   function updateCityFromDay() {
     const nightCityMap = {};
-    Array.from(document.querySelectorAll('#hotelRows tr')).forEach((tr, i) => {
+    const hotelRows = Array.from(document.querySelectorAll('#hotelRows tr'));
+    hotelRows.forEach((tr, i) => {
       const cs = tr.querySelectorAll('select')[0];
       nightCityMap[i + 1] = cs?.value || '';
     });
+    // Day after the last hotel night (e.g. a departure-day airport transfer) stays in the last night's city
+    if (hotelRows.length) {
+      const lastCitySelect = hotelRows[hotelRows.length - 1].querySelectorAll('select')[0];
+      nightCityMap[hotelRows.length + 1] = lastCitySelect?.value || '';
+    }
     cityTd.textContent = nightCityMap[parseInt(dayInput.value)] || '';
   }
   dayInput.addEventListener('change', () => { updateCityFromDay(); recalc(); });
@@ -2572,7 +2590,8 @@ function exportProformaPDF() {
     .pdf-proforma th { background: var(--color-background-secondary); }
     .pdf-proforma blockquote { border-left: 3px solid var(--color-brand-kin); padding-left: 12px; color: var(--color-sumi-60); margin: 10px 0; }
     .pdf-proforma hr { border: none; border-top: 1px solid var(--color-brand-kodama); margin: 20px 0; }
-    .pdf-proforma tr, .pdf-proforma blockquote, .pdf-proforma li { page-break-inside: avoid; }
+    .pdf-proforma tr, .pdf-proforma blockquote, .pdf-proforma li, .pdf-proforma p,
+    .pdf-proforma h1, .pdf-proforma h2, .pdf-proforma h3 { page-break-inside: avoid; }
     .pdf-proforma h1, .pdf-proforma h2, .pdf-proforma h3 { page-break-after: avoid; }
   `;
 
@@ -2581,7 +2600,7 @@ function exportProformaPDF() {
   const overlay = document.createElement('div');
   overlay.style.cssText = `
     position: fixed; inset: 0; z-index: 99999; overflow: auto;
-    background: var(--color-background-primary);
+    background: var(--color-brand-white);
   `;
 
   const container = document.createElement('div');
@@ -2590,7 +2609,7 @@ function exportProformaPDF() {
   container.style.cssText = `
     width: 700px; max-width: 100%; margin: 0 auto;
     font-family: var(--font-style-inter), sans-serif; font-size: 13px; line-height: 1.5;
-    color: var(--color-text-primary); background: var(--color-background-primary); padding: 32px;
+    color: var(--color-text-primary); background: var(--color-brand-white); padding: 32px;
   `;
   overlay.appendChild(container);
 
@@ -2605,7 +2624,7 @@ function exportProformaPDF() {
     margin: 12,
     filename,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#fffef5' },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['css', 'legacy'] },
   }).from(container).save()).then(() => {
