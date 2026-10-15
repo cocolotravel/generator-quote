@@ -2164,6 +2164,8 @@ function applyDraftState(s) {
     s.guides.forEach(g => addGuideRow(g));
   }
 
+  syncCitiesFromHotels();
+
   setTimeout(() => {
     $('totalsBody').querySelectorAll('tr').forEach(tr2 => {
       const pax = parseInt(tr2.dataset.pax);
