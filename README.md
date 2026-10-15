@@ -147,7 +147,7 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 ### Exports
 
 - **Excel** — 6 sheets: Dashboard · Hotels · Services · Transports · Guide Days · Totals
-- **Pro-forma** — Markdown file with itinerary, hotels, services, pricing table. Filename = `[Tour Name] - pro-forma.md`. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`
+- **Pro-forma** — Markdown file with itinerary, hotels, services, transports, pricing table. Filename = `[Tour Name] - pro-forma.md`. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`
 
 ### Drafts
 

@@ -12,9 +12,15 @@
 |-------|-------|-------|-------|
 {{HOTEL_ROWS}}
 
+*Hotels listed above are not contractual and are given as a reference only. They may be changed for other hotels of similar rank and budget.*
+
 ## Included Services
 
 {{SERVICE_LINES}}
+
+## Included Transports
+
+{{TRANSPORT_LINES}}
 
 ## Rates
 

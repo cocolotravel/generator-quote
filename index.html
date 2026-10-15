@@ -2481,13 +2481,15 @@ function exportProforma() {
     `| ${g.city} | ${g.hotelName || '—'} | ${g.nights} | ${g.meal} |`
   );
 
-  // ── Services Inclus ──
+  // ── Services & Transports Inclus (kept separate) ──
   const capitalizeWords = str => str.replace(/\S+/g, w => w.charAt(0).toUpperCase() + w.slice(1));
-  const allItems = [
-    ...services.map(s => ({ day: s.day, city: s.city, name: s.name })),
-    ...transports.map(t => ({ day: t.day, city: t.city, name: t.name })),
-  ].filter(x => x.name).sort((a, b) => a.day - b.day);
-  const serviceLines = allItems.map((item, i) => `${i + 1}. Day ${String(item.day).padStart(2, '0')} - ${capitalizeWords(item.name)} - ${item.city}`).join('\n');
+  const toLines = items => items
+    .filter(x => x.name)
+    .sort((a, b) => a.day - b.day)
+    .map((item, i) => `${i + 1}. Day ${String(item.day).padStart(2, '0')} - ${capitalizeWords(item.name)} - ${item.city}`)
+    .join('\n');
+  const serviceLines   = toLines(services.map(s => ({ day: s.day, city: s.city, name: s.name })));
+  const transportLines = toLines(transports.map(t => ({ day: t.day, city: t.city, name: t.name })));
 
   // ── Single supplement: (sum of single prices × 2) − sum of twin prices ──
   const totalSingle = hotels.reduce((s, h) => s + h.single, 0);
@@ -2519,6 +2521,7 @@ function exportProforma() {
     .replace('{{ITINERARY_ROWS}}', iRows.join('\n'))
     .replace('{{HOTEL_ROWS}}', hRows.join('\n'))
     .replace('{{SERVICE_LINES}}', serviceLines)
+    .replace('{{TRANSPORT_LINES}}', transportLines)
     .replace('{{SINGLE_SUPPLEMENT}}', suppFmt)
     .replace('{{PAX_ROWS}}', paxRows.join('\n'))
     .replace('{{EXTRA_NIGHT_ROWS}}', extraRows.join('\n'));
