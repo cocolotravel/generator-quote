@@ -16,7 +16,17 @@ Prices are given in JPY.
 |------|--------|-------|
 {{ITINERARY_ROWS}}
 
-## Hotels
+## Rates
+
+Price per PAX. TWIN basis.
+
+| PAX Base | Price |
+|----------|------|
+{{PAX_ROWS}}
+
+## Inclusions
+
+### Hotels
 
 | City | Hotel | Nights | Meals |
 |-------|-------|-------|-------|
@@ -24,22 +34,27 @@ Prices are given in JPY.
 
 *Hotels listed above are not contractual and are given as a reference only. They may be changed for other hotels of similar rank and budget.*
 
-## Services
+### Services
 
 {{SERVICE_LINES}}
 
-## Transports
+### Transports
 
 {{TRANSPORT_LINES}}
 
-## Rates
+## Extras
 
-Price per PAX. TWIN basis.
-*Single room supplement {{SINGLE_SUPPLEMENT}} JPY*
+### Single Room Supplement
 
-| PAX Base | Price |
-|----------|------|
-{{PAX_ROWS}}
+Single room supplement {{SINGLE_SUPPLEMENT}} JPY
+
+### Additional Night
+
+Price per night, per room, based on a TWIN room (2 people).
+
+| City | Price | Meals |
+|-------|------|-------|
+{{EXTRA_NIGHT_ROWS}}
 
 ### Airport Transfers
 
@@ -60,14 +75,6 @@ Price per taxi from 5 to 8 people with 1 bag per person, in both directions (air
 | Narita - Tokyo | 25,000 JPY |
 | Kansai - Osaka | 22,000 JPY |
 | Kansai - Kyoto | 33,000 JPY |
-
-### Additional Night
-
-Price per night, per room, based on a TWIN room (2 people).
-
-| City | Price | Meals |
-|-------|------|-------|
-{{EXTRA_NIGHT_ROWS}}
 
 ---
 
