@@ -2580,7 +2580,7 @@ function exportProformaPDF() {
   container.className = 'pdf-proforma';
   container.innerHTML = marked.parse(built.md);
   container.style.cssText = `
-    position: fixed; left: -9999px; top: 0; width: 700px;
+    position: absolute; left: 0; top: 0; width: 700px; z-index: -1000;
     font-family: var(--font-style-inter), sans-serif; font-size: 13px; line-height: 1.5;
     color: var(--color-text-primary); background: var(--color-background-primary); padding: 32px;
   `;
@@ -2588,22 +2588,24 @@ function exportProformaPDF() {
   document.body.appendChild(style);
   document.body.appendChild(container);
 
-  html2pdf().set({
+  const cleanup = () => { container.remove(); style.remove(); };
+
+  const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+
+  fontsReady.then(() => html2pdf().set({
     margin: 12,
     filename,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#fffef5' },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['css', 'legacy'] },
-  }).from(container).save().then(() => {
-    container.remove();
-    style.remove();
+  }).from(container).save()).then(() => {
+    cleanup();
     showToast('✓ PDF exported: ' + filename);
   }).catch(e => {
-    container.remove();
-    style.remove();
+    cleanup();
     console.error('PDF export failed:', e);
-    showToast('✗ PDF export failed: ' + e.message);
+    showToast('✗ PDF export failed: ' + (e && e.message ? e.message : e));
   });
 }
 
