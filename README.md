@@ -147,7 +147,7 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 ### Exports
 
 - **Excel** — 6 sheets: Dashboard · Hotels · Services · Transports · Guide Days · Totals
-- **Pro-forma** — available as Markdown (`[Tour Name] - pro-forma.md`) or PDF (`[Tour Name] - pro-forma.pdf`), both built from the same itinerary/hotels/services (transports folded in)/pricing content, plus a note on the number of guides included and for how many days. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`. The PDF is rendered client-side (`marked` to convert the filled-in Markdown to HTML, `html2pdf.js` to render and download it) — no server involved. The PDF only reserves blank space at the top of page 1 for an electronic signature stamp; the Markdown export does not.
+- **Pro-forma** — available as Markdown (`[Tour Name] - pro-forma.md`) or PDF (`[Tour Name] - pro-forma.pdf`), both built from the same itinerary/hotels/services/pricing content, plus a note on the number of guides included and for how many days. Transports are internal logistics and are intentionally excluded from the pro-forma. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`. The PDF is rendered client-side (`marked` to convert the filled-in Markdown to HTML, `html2pdf.js` to render and download it) — no server involved. The PDF only reserves blank space at the top of page 1 for an electronic signature stamp; the Markdown export does not.
 
 ### Drafts
 

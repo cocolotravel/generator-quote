@@ -2482,7 +2482,6 @@ function exportExcel() {
 function buildProformaMarkdown() {
   const hotels    = getHotelRows();
   const services  = getServiceRows();
-  const transports = getTransportRows();
   const hotelGroups = getConsecutiveHotelGroups();
   const tourName  = $('tourName').value || 'quote';
 
@@ -2502,17 +2501,14 @@ function buildProformaMarkdown() {
     `| ${g.city} | ${g.hotelName || '—'} | ${g.nights} | ${g.meal} |`
   );
 
-  // ── Services (Transports folded in alongside Services) ──
+  // ── Services (Transports are not listed in the pro-forma — internal logistics only) ──
   const capitalizeWords = str => str.replace(/\S+/g, w => w.charAt(0).toUpperCase() + w.slice(1));
   const toLines = items => items
     .filter(x => x.name)
     .sort((a, b) => a.day - b.day)
     .map((item, i) => `${i + 1}. Day ${String(item.day).padStart(2, '0')} - ${capitalizeWords(item.name)} - ${item.city}`)
     .join('\n');
-  const serviceLines = toLines([
-    ...services.map(s => ({ day: s.day, city: s.city, name: s.name })),
-    ...transports.map(t => ({ day: t.day, city: t.city, name: t.name })),
-  ]);
+  const serviceLines = toLines(services.map(s => ({ day: s.day, city: s.city, name: s.name })));
 
   // ── Guides note: how many guides, for how many days ──
   const numGuides = getVal('numGuides') || 1;
