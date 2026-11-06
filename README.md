@@ -147,7 +147,7 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 ### Exports
 
 - **Excel** — 6 sheets: Dashboard · Hotels · Services · Transports · Guide Days · Totals
-- **Pro-forma** — available as Markdown (`[Tour Name] - pro-forma.md`) or PDF (`[Tour Name] - pro-forma.pdf`), both built from the same itinerary/hotels/services/pricing content, plus a note on the number of guides included and for how many days. Transports are internal logistics and are intentionally excluded from the pro-forma. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`. The PDF is rendered client-side (`marked` to convert the filled-in Markdown to HTML, `html2pdf.js` to render and download it) — no server involved. The PDF only reserves blank space at the top of page 1 for an electronic signature stamp; the Markdown export does not.
+- **Pro-forma** — available as Markdown (`[Tour Name] - pro-forma.md`) or PDF (`[Tour Name] - pro-forma.pdf`), both built from the same itinerary/hotels/services/pricing content, plus a note on the number of guides included and for how many days. Transports are internal logistics and are intentionally excluded from the pro-forma. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`. The PDF is rendered client-side (`marked` to convert the filled-in Markdown to HTML, `html2pdf.js` to render and download it) — no server involved. The PDF only shows a labeled, dashed-border box at the top of page 1 (about a quarter of the page) reserved for an electronic signature stamp; the Markdown export does not.
 
 ### Drafts
 
@@ -159,6 +159,7 @@ Saved to/loaded from the Drafts API, not localStorage. The **📁 Drafts** butto
 - `cities_data.csv` and `proforma-template.md` must both be in the same Linode bucket directory as `index.html`
 - The pro-forma template's `{{PLACEHOLDER}}` tokens (`{{ITINERARY_ROWS}}`, `{{HOTEL_ROWS}}`, `{{GUIDES_NOTE}}`, `{{SERVICE_LINES}}`, `{{SINGLE_SUPPLEMENT}}`, `{{PAX_ROWS}}`, `{{EXTRA_NIGHT_ROWS}}`) must match exactly between `proforma-template.md` and `buildProformaMarkdown()` in `index.html`
 - Autocomplete dropdowns use `position: fixed` anchored to viewport coordinates (not `absolute`) to avoid clipping inside `overflow: hidden` table containers
+- `exportProformaPDF()`'s off-screen render container must be `position: absolute`, not `fixed` — html2canvas mis-measures fixed-position elements during its cloning pass, inserting a blank leading gap one viewport-height tall. It also calls `window.scrollTo(0, 0)` right before capturing, since a non-zero scroll position (e.g. left over from the Builder form) produces the same kind of leading gap. The pagebreak mode is `['css']` only — mixing in `'legacy'` reintroduces inconsistent blank-gap artifacts within the document
 
 ---
 

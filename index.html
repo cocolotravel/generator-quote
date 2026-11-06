@@ -2593,34 +2593,45 @@ function exportProformaPDF() {
     .pdf-proforma th { background: var(--color-background-secondary); }
     .pdf-proforma blockquote { border-left: 3px solid var(--color-brand-kin); padding-left: 12px; color: var(--color-sumi-60); margin: 10px 0; }
     .pdf-proforma hr { border: none; border-top: 1px solid var(--color-brand-kodama); margin: 20px 0; }
-    .pdf-proforma tr, .pdf-proforma blockquote, .pdf-proforma li, .pdf-proforma p,
+    .pdf-proforma table, .pdf-proforma tr, .pdf-proforma blockquote, .pdf-proforma li, .pdf-proforma p,
     .pdf-proforma h1, .pdf-proforma h2, .pdf-proforma h3 { page-break-inside: avoid; }
-    .pdf-proforma h1, .pdf-proforma h2, .pdf-proforma h3 { page-break-after: avoid; }
+    .pdf-signature-box {
+      height: 280px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;
+      border: 1.5px dashed var(--color-brand-kodama); border-radius: 4px;
+      color: var(--color-sumi-60); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;
+      page-break-inside: avoid;
+    }
   `;
 
-  // Rendered as a genuinely visible full-screen overlay (not hidden off-screen) —
-  // html2canvas needs the element actually painted by the browser to capture it reliably.
+  // Rendered as a genuinely visible overlay (not hidden off-screen) — html2canvas needs the element
+  // actually painted by the browser to capture it reliably. Deliberately position:absolute, not fixed:
+  // html2canvas mis-measures position:fixed elements during its cloning pass, inserting a blank
+  // leading gap equal to one viewport height at the top of the rendered PDF.
   const overlay = document.createElement('div');
   overlay.style.cssText = `
-    position: fixed; inset: 0; z-index: 99999; overflow: auto;
+    position: absolute; top: 0; left: 0; width: 100%; z-index: 99999;
     background: var(--color-brand-white);
   `;
 
-  // Extra top padding reserves blank space on page 1 for an electronic signature stamp (PDF only — the
+  // A visible, labeled box reserves space on page 1 for an electronic signature stamp (PDF only — the
   // Markdown export has no such space, and since this is one continuous rendered element sliced into
-  // pages, the padding only pushes the very start of the content down, not every page).
+  // pages, the box only appears once, at the very start of the content, not on every page).
   const container = document.createElement('div');
   container.className = 'pdf-proforma';
-  container.innerHTML = marked.parse(built.md);
+  container.innerHTML = '<div class="pdf-signature-box">Space reserved for signature</div>' + marked.parse(built.md);
   container.style.cssText = `
     width: 700px; max-width: 100%; margin: 0 auto;
     font-family: var(--font-style-inter), sans-serif; font-size: 13px; line-height: 1.5;
-    color: var(--color-text-primary); background: var(--color-brand-white); padding: 160px 32px 32px 32px;
+    color: var(--color-text-primary); background: var(--color-brand-white); padding: 32px;
   `;
   overlay.appendChild(container);
 
   document.body.appendChild(style);
   document.body.appendChild(overlay);
+  // html2canvas's capture is thrown off by a non-zero scroll position (e.g. left over from the Builder
+  // form being scrolled before export), producing a blank leading gap roughly the size of the scroll
+  // offset. Reset to the top before capturing.
+  window.scrollTo(0, 0);
 
   const cleanup = () => { overlay.remove(); style.remove(); };
 
@@ -2632,7 +2643,7 @@ function exportProformaPDF() {
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] },
+    pagebreak: { mode: ['css'] },
   }).from(container).save()).then(() => {
     cleanup();
     showToast('✓ PDF exported: ' + filename);
