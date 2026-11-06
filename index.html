@@ -2644,7 +2644,29 @@ function exportProformaPDF() {
     html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['css'] },
-  }).from(container).save()).then(() => {
+  }).from(container).toPdf().get('pdf').then(pdf => {
+    // Total page count is only known once html2pdf has finished paginating — stamp it on
+    // afterward, inside the existing margins so nothing overlaps the rendered content.
+    const totalPages = pdf.internal.getNumberOfPages();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.setTextColor(140, 140, 140);
+    pdf.setPage(1);
+    pdf.text(`This document contains ${totalPages} page${totalPages > 1 ? 's' : ''}.`, pageWidth / 2, 7, { align: 'center' });
+
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      pdf.setTextColor(140, 140, 140);
+      pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 6, { align: 'center' });
+    }
+
+    pdf.save(filename);
+  })).then(() => {
     cleanup();
     showToast('✓ PDF exported: ' + filename);
   }).catch(e => {
