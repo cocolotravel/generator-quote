@@ -26,6 +26,8 @@ Price per PAX. TWIN basis.
 
 ## Inclusions
 
+{{GUIDES_NOTE}}
+
 ### Hotels
 
 | City | Hotel | Nights | Meals |
@@ -37,10 +39,6 @@ Price per PAX. TWIN basis.
 ### Services
 
 {{SERVICE_LINES}}
-
-### Transports
-
-{{TRANSPORT_LINES}}
 
 ## Extras
 

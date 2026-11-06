@@ -147,7 +147,7 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 ### Exports
 
 - **Excel** — 6 sheets: Dashboard · Hotels · Services · Transports · Guide Days · Totals
-- **Pro-forma** — available as Markdown (`[Tour Name] - pro-forma.md`) or PDF (`[Tour Name] - pro-forma.pdf`), both built from the same itinerary/hotels/services/transports/pricing content. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`. The PDF is rendered client-side (`marked` to convert the filled-in Markdown to HTML, `html2pdf.js` to render and download it) — no server involved
+- **Pro-forma** — available as Markdown (`[Tour Name] - pro-forma.md`) or PDF (`[Tour Name] - pro-forma.pdf`), both built from the same itinerary/hotels/services (transports folded in)/pricing content, plus a note on the number of guides included and for how many days. Built from `proforma-template.md`, fetched at load time and filled in with `{{PLACEHOLDER}}` substitution — edit that file to change the pro-forma's wording/layout without touching `index.html`. The PDF is rendered client-side (`marked` to convert the filled-in Markdown to HTML, `html2pdf.js` to render and download it) — no server involved. The PDF only reserves blank space at the top of page 1 for an electronic signature stamp; the Markdown export does not.
 
 ### Drafts
 
@@ -157,7 +157,7 @@ Saved to/loaded from the Drafts API, not localStorage. The **📁 Drafts** butto
 
 - `loadCatalogs()` must be the last call in the script — removing it breaks the loading screen
 - `cities_data.csv` and `proforma-template.md` must both be in the same Linode bucket directory as `index.html`
-- The pro-forma template's `{{PLACEHOLDER}}` tokens (`{{ITINERARY_ROWS}}`, `{{HOTEL_ROWS}}`, `{{SERVICE_LINES}}`, `{{SINGLE_SUPPLEMENT}}`, `{{PAX_ROWS}}`, `{{EXTRA_NIGHT_ROWS}}`) must match exactly between `proforma-template.md` and `exportProforma()` in `index.html`
+- The pro-forma template's `{{PLACEHOLDER}}` tokens (`{{ITINERARY_ROWS}}`, `{{HOTEL_ROWS}}`, `{{GUIDES_NOTE}}`, `{{SERVICE_LINES}}`, `{{SINGLE_SUPPLEMENT}}`, `{{PAX_ROWS}}`, `{{EXTRA_NIGHT_ROWS}}`) must match exactly between `proforma-template.md` and `buildProformaMarkdown()` in `index.html`
 - Autocomplete dropdowns use `position: fixed` anchored to viewport coordinates (not `absolute`) to avoid clipping inside `overflow: hidden` table containers
 
 ---
