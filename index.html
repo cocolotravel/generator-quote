@@ -741,7 +741,7 @@
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span class="section-num">1</span> Hotels</div>
-        <div style="font-size:11px;color:var(--text3)">Single supplement = (Single × 2) − Twin · Total for stay: <span id="totalSingleSupplement" style="font-weight:600;color:var(--text)">¥0</span></div>
+        <div style="font-size:11px;color:var(--text3)">Single supplement = Single − (Twin ÷ 2) · Total for stay: <span id="totalSingleSupplement" style="font-weight:600;color:var(--text)">¥0</span></div>
       </div>
       <div class="section-body">
         <div style="overflow-x:auto">
@@ -1486,7 +1486,7 @@ function addHotelRow(data={}) {
   suppCell.style.textAlign = 'right';
 
   function updateSupp() {
-    const s = (parseFloat(singleInput.value)||0)*2 - (parseFloat(twinInput.value)||0);
+    const s = (parseFloat(singleInput.value)||0) - (parseFloat(twinInput.value)||0) / 2;
     suppCell.textContent = '¥' + fmt(Math.max(0,s));
     recalc();
   }
@@ -1823,7 +1823,7 @@ function recalc() {
   if (totalSupplementEl) {
     const totalSingle = hotels.reduce((s, h) => s + h.single, 0);
     const totalTwin   = hotels.reduce((s, h) => s + h.twin, 0);
-    totalSupplementEl.textContent = '¥' + fmt(Math.max(0, Math.round(totalSingle * 2 - totalTwin)));
+    totalSupplementEl.textContent = '¥' + fmt(Math.max(0, Math.round(totalSingle - totalTwin / 2)));
   }
   const guideTotal = calcGuideTotal();
   const eurRate = getVal('eurRate') || 175;
@@ -2412,7 +2412,7 @@ function exportExcel() {
   const hotelHeader = ['Night', 'City', 'Hotel Name', 'Meals', 'Room Type', 'Twin ¥', 'Single ¥', 'Guide ¥', 'Single Supplement ¥'];
   const hotelAoa = [hotelHeader, ...hotels.map(h => [
     h.night, h.city, h.hotelName, h.meal, h.roomType, h.twin, h.single, h.guide,
-    Math.max(0, h.single * 2 - h.twin)
+    Math.max(0, h.single - h.twin / 2)
   ])];
   const wsHotels = XLSX.utils.aoa_to_sheet(hotelAoa);
   wsHotels['!cols'] = [{wch:6},{wch:16},{wch:28},{wch:8},{wch:20},{wch:10},{wch:10},{wch:10},{wch:20}];
@@ -2523,10 +2523,10 @@ function buildProformaMarkdown() {
   const guideDaysCount = hotels.length + 1;
   const guidesNote = `Includes ${numGuides} guide${numGuides > 1 ? 's' : ''} for ${guideDaysCount} day${guideDaysCount > 1 ? 's' : ''} (Day 01 to Day ${String(guideDaysCount).padStart(2, '0')}).`;
 
-  // ── Single supplement: (sum of single prices × 2) − sum of twin prices ──
+  // ── Single supplement: sum of single prices − (sum of twin prices ÷ 2) ──
   const totalSingle = hotels.reduce((s, h) => s + h.single, 0);
   const totalTwin   = hotels.reduce((s, h) => s + h.twin, 0);
-  const suppFmt     = Math.max(0, Math.round(totalSingle * 2 - totalTwin)).toLocaleString('ja-JP');
+  const suppFmt     = Math.max(0, Math.round(totalSingle - totalTwin / 2)).toLocaleString('ja-JP');
 
   // ── PAX pricing (only manually entered rows) ──
   const paxRows = [];

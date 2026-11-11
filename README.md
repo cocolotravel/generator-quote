@@ -73,7 +73,7 @@ Staff input for the tour:
 - Hotel Name: free text
 - Meals, Room Type: dropdowns
 - Twin ¥ / Single ¥ / Guide ¥: per-night prices (tax-inclusive)
-- Single Supplement: auto-calculated = `(Single × 2) − Twin`
+- Single Supplement: auto-calculated = `Single − (Twin ÷ 2)` (industry-standard: the single room rate minus the per-person twin-share rate, since Twin ¥ is priced per room)
 - Drag-to-reorder rows
 
 ##### Services section
