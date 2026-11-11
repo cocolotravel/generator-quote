@@ -741,7 +741,7 @@
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span class="section-num">1</span> Hotels</div>
-        <div style="font-size:11px;color:var(--text3)">Single supplement = (Single × 2) − Twin</div>
+        <div style="font-size:11px;color:var(--text3)">Single supplement = (Single × 2) − Twin · Total for stay: <span id="totalSingleSupplement" style="font-weight:600;color:var(--text)">¥0</span></div>
       </div>
       <div class="section-body">
         <div style="overflow-x:auto">
@@ -1817,6 +1817,14 @@ function recalc() {
   const hotels = getHotelRows();
   const services = getServiceRows();
   const transports = getTransportRows();
+
+  // ── Single supplement for the whole stay (same formula used in the pro-forma) ──
+  const totalSupplementEl = document.getElementById('totalSingleSupplement');
+  if (totalSupplementEl) {
+    const totalSingle = hotels.reduce((s, h) => s + h.single, 0);
+    const totalTwin   = hotels.reduce((s, h) => s + h.twin, 0);
+    totalSupplementEl.textContent = '¥' + fmt(Math.max(0, Math.round(totalSingle * 2 - totalTwin)));
+  }
   const guideTotal = calcGuideTotal();
   const eurRate = getVal('eurRate') || 175;
   const margin = getVal('targetMargin') / 100;
