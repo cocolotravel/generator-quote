@@ -104,7 +104,7 @@ Handling charges/fees will be included in the tariffs mentioned on the travel es
 
 ## Payment Procedures and Time Period for Travel Fees (Article 6)
 
-The whole amount of the Travel Fee must be paid no later than 31 days prior to the first day of travel.
+The whole amount of the Travel Fee must be paid no later than 45 days prior to the first day of travel.
 
 ## A Change of Travel Fees (Article 7)
 
