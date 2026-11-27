@@ -787,6 +787,7 @@
                 <th style="min-width:90px">Per Group ¥</th>
                 <th style="min-width:90px">Guide ¥</th>
                 <th>Qty</th>
+                <th>Cash</th>
                 <th class="col-actions"></th>
               </tr>
             </thead>
@@ -973,7 +974,7 @@
         <div style="margin-left:auto;">
           <div class="field-group">
             <label>PAX</label>
-            <input type="number" id="sb-pax" value="0" min="0" style="width:80px" oninput="recalcSvcBudget()">
+            <input type="number" id="sb-pax" value="0" min="0" style="width:80px" oninput="recalcSvcBudget(); recalcGuideCashAdvance();">
           </div>
         </div>
       </div>
@@ -1053,6 +1054,33 @@
           <tr style="background:var(--text);color:var(--color-text-on-dark);font-weight:700;">
             <td colspan="7" style="text-align:right;font-family:var(--font-style-inter),sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Guide Days Total</td>
             <td id="gb-total" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;background:var(--gleam);color:var(--color-text-primary);">¥0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <hr style="border:none;border-top:2px solid var(--border);margin-bottom:36px;">
+
+    <!-- GUIDE CASH ADVANCE -->
+    <div style="margin-bottom:32px;">
+      <div style="margin-bottom:16px;">
+        <div style="font-family:var(--font-style-roslindale),serif;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="section-num">4</span> Guide Cash Advance</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px;">Cash to hand the guide before departure · Guide Allowance + Extras (all days) + Services marked "Cash"</div>
+      </div>
+      <table class="totals-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Day</th>
+            <th style="text-align:left;min-width:100px">City</th>
+            <th style="text-align:left;min-width:260px">Item</th>
+            <th style="background:var(--gleam);color:var(--color-text-primary)">Total ¥</th>
+          </tr>
+        </thead>
+        <tbody id="gcaBody"></tbody>
+        <tfoot>
+          <tr style="background:var(--text);color:var(--color-text-on-dark);font-weight:700;">
+            <td colspan="3" style="text-align:right;font-family:var(--font-style-inter),sans-serif;font-size:12px;letter-spacing:0.3px;text-transform:uppercase;padding:8px 12px;">Guide Cash Advance Total</td>
+            <td id="gca-total" style="font-variant-numeric:tabular-nums;text-align:right;padding:8px 12px;background:var(--gleam);color:var(--color-text-primary);">¥0</td>
           </tr>
         </tfoot>
       </table>
@@ -1571,6 +1599,15 @@ function addServiceRow(data={}) {
   const qtyInput = numInput(data.qty || 1);
   qtyInput.style.width = '48px';
 
+  const cashInput = document.createElement('input');
+  cashInput.type = 'checkbox';
+  cashInput.className = 'row-cash';
+  cashInput.checked = !!data.cash;
+  cashInput.addEventListener('change', recalc);
+  const cashTd = document.createElement('td');
+  cashTd.style.textAlign = 'center';
+  cashTd.appendChild(cashInput);
+
   const nameCellTd = document.createElement('td');
   const nameWrap = makeAutocomplete(SERVICES_DATA, 'name', ['adult','group'], (item) => {
     perPersonInput.value = item.adult || 0;
@@ -1589,6 +1626,7 @@ function addServiceRow(data={}) {
   tr.appendChild(td(perGroupInput));
   tr.appendChild(td(guideInput));
   tr.appendChild(td(qtyInput));
+  tr.appendChild(cashTd);
   const actTd = document.createElement('td');
   actTd.appendChild(delBtn(tr));
   tr.appendChild(actTd);
@@ -1602,6 +1640,7 @@ function getServiceRows() {
     const inputs = tr.querySelectorAll('input[type=number]');
     const nameInput = tr.querySelector('.autocomplete-wrap');
     const cityTd = tr.querySelector('.row-city');
+    const cashInput = tr.querySelector('.row-cash');
     return {
       day: parseFloat(inputs[0].value)||0,
       city: cityTd ? cityTd.textContent : '',
@@ -1610,6 +1649,7 @@ function getServiceRows() {
       perGroup: parseFloat(inputs[2].value)||0,
       guidePrice: parseFloat(inputs[3].value)||0,
       qty: parseFloat(inputs[4].value)||1,
+      cash: cashInput ? cashInput.checked : false,
     };
   });
 }
@@ -1971,6 +2011,9 @@ function recalc() {
   const hotelsBudgetTotal = recalcHotelCosts();
   const svcTrnBudgetTotal = recalcSvcBudget();
   const guidesBudgetTotal = recalcGuideBudget();
+  // Not added to the grand total below — it's cash drawn from amounts already counted in the
+  // Services/Transports and Guide Days budgets above, not an additional cost.
+  recalcGuideCashAdvance();
   const grandTotalEl = document.getElementById('budget-grand-total');
   if (grandTotalEl) grandTotalEl.textContent = '¥' + fmt(hotelsBudgetTotal + svcTrnBudgetTotal + guidesBudgetTotal);
 }
@@ -2048,6 +2091,49 @@ function recalcGuideBudget() {
   });
 
   const totalEl = document.getElementById('gb-total');
+  if (totalEl) totalEl.textContent = '¥' + fmt(grandTotal);
+  return grandTotal;
+}
+
+// ── GUIDE CASH ADVANCE ─────────────────────────────────────────────────────
+function recalcGuideCashAdvance() {
+  const tbody = document.getElementById('gcaBody');
+  if (!tbody) return 0;
+  tbody.innerHTML = '';
+
+  const paxEl = document.getElementById('sb-pax');
+  const pax = paxEl ? (parseFloat(paxEl.value) || 0) : 0;
+  const numGuides = getVal('numGuides');
+
+  let grandTotal = 0;
+
+  const allowanceExtras = getGuideRows().reduce((s, r) => s + (r.allowance + r.extras) * r.num, 0);
+  grandTotal += allowanceExtras;
+  const allowanceRow = document.createElement('tr');
+  allowanceRow.innerHTML = `
+    <td style="text-align:left">—</td>
+    <td style="text-align:left;color:var(--text2)">—</td>
+    <td style="text-align:left">Guide Allowance &amp; Extras (all days)</td>
+    <td style="font-weight:700">¥${fmt(allowanceExtras)}</td>
+  `;
+  tbody.appendChild(allowanceRow);
+
+  getServiceRows().filter(r => r.cash && r.name).forEach(r => {
+    const guideTotal = r.guidePrice * r.qty * numGuides;
+    const total = (r.perPerson * pax * r.qty) + (r.perGroup * r.qty) + guideTotal;
+    grandTotal += total;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left">${r.day || '—'}</td>
+      <td style="text-align:left;color:var(--text2)">${r.city || '—'}</td>
+      <td style="text-align:left">${r.name}</td>
+      <td style="font-weight:700">¥${fmt(total)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const totalEl = document.getElementById('gca-total');
   if (totalEl) totalEl.textContent = '¥' + fmt(grandTotal);
   return grandTotal;
 }
@@ -2419,13 +2505,13 @@ function exportExcel() {
   XLSX.utils.book_append_sheet(wb, wsHotels, 'Hotels');
 
   // ── Services sheet
-  const svcHeader = ['Day', 'City', 'Name', 'Per Person ¥', 'Per Group ¥', 'Guide ¥', 'Qty', 'Total Guide ¥'];
+  const svcHeader = ['Day', 'City', 'Name', 'Per Person ¥', 'Per Group ¥', 'Guide ¥', 'Qty', 'Total Guide ¥', 'Cash'];
   const svcAoa = [svcHeader, ...services.map(s => [
     s.day, s.city, s.name, s.perPerson, s.perGroup, s.guidePrice, s.qty,
-    s.guidePrice * s.qty * getVal('numGuides')
+    s.guidePrice * s.qty * getVal('numGuides'), s.cash ? 'Yes' : ''
   ])];
   const wsServices = XLSX.utils.aoa_to_sheet(svcAoa);
-  wsServices['!cols'] = [{wch:5},{wch:16},{wch:40},{wch:12},{wch:12},{wch:10},{wch:5},{wch:14}];
+  wsServices['!cols'] = [{wch:5},{wch:16},{wch:40},{wch:12},{wch:12},{wch:10},{wch:5},{wch:14},{wch:6}];
   XLSX.utils.book_append_sheet(wb, wsServices, 'Services');
 
   // ── Transports sheet

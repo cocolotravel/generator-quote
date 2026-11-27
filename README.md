@@ -23,7 +23,7 @@ Open `index.html` in a browser. The tool fetches all catalog data on load — no
 
 - **Builder tab** — tour setup (name, ref, season, guides, nights, tax rate, exchange rate, markups) plus drag-to-reorder Hotels, Services, Transports, and Guide Days sections
 - **Pricing Summary tab** — full 1–30 PAX pricing table with cost/suggested/your price, EUR conversion, partner commission, gross/net margin, color-coded margins
-- **Budgets tab** — Hotels budget (room counts, per-hotel cost breakdown), Services & Transports budget (single PAX input, per-line and combined totals), Guide Days budget (auto-populated, per-day and grand total), plus an overall Grand Total Budget combining all three
+- **Budgets tab** — Hotels budget (room counts, per-hotel cost breakdown), Services & Transports budget (single PAX input, per-line and combined totals), Guide Days budget (auto-populated, per-day and grand total), a Guide Cash Advance total (allowance + extras + cash-marked services), plus an overall Grand Total Budget combining Hotels/Services & Transports/Guide Days
 - **Exports** — Excel workbook (6 sheets), and the pro-forma as Markdown or PDF
 - **Drafts** — save/load/search quote drafts via the Drafts API (not localStorage)
 - **Catalog data** — cities from `cities_data.csv`, services/transports from Xano, proxied server-side so credentials never reach the browser
@@ -81,6 +81,7 @@ Staff input for the tour:
 - Day number → City auto-filled from matching hotel night (read-only, not a dropdown)
 - Service name: searchable autocomplete from Xano catalog, with custom entry fallback
 - Per Person ¥, Per Group ¥, Guide ¥, Qty
+- Cash checkbox — marks a service as paid in cash by the guide on-site rather than by card/wire; feeds the Budgets tab's Guide Cash Advance section
 - Drag-to-reorder rows
 
 ##### Transports section
@@ -143,6 +144,12 @@ Margin color coding: green ≥ 20%, yellow ≥ 0%, red = loss
 - Auto-populated from the Builder's Guide Days section, no manual input
 - Total/day = `(Rate + Allowance + Extras) × # Guides`
 - Grand total across all guide days
+
+##### Guide Cash Advance
+
+- How much cash to hand the guide before departure
+- = sum of (Allowance + Extras) across all Guide Days + the Total ¥ of every Services row checked "Cash" (uses the same PAX field as the Services & Transports Budget above)
+- Not included in the Grand Total Budget banner — it's cash drawn from amounts already counted in the Services/Transports and Guide Days budgets, not an additional cost
 
 ### Exports
 
